@@ -9,27 +9,59 @@ export function Header({
   onOpenComparison,
   selectedLanguage,
   onChangeLanguage,
-  showingBookmarksOnly
+  showingBookmarksOnly,
+  currentUser,
+  onOpenAuthModal,
+  onLogout
 }) {
   return (
     <header className="app-header">
       <div className="header-container">
         <div className="brand-section">
           <div className="brand-badge-box">
-            <span className="brand-initials">AS</span>
+            <span className="brand-initials">U</span>
           </div>
           <div>
             <div className="brand-title-row">
-              <h1 className="brand-title">AlgoRizz SchemeSetu</h1>
-              <span className="live-nlp-pill">Government Scheme Matcher</span>
+              <h1 className="brand-title">Udyama</h1>
+              <span className="live-nlp-pill">
+                {currentUser.role === 'official' ? 'Official / CSC Mode' : 'Citizen Self-Service'}
+              </span>
             </div>
             <p className="brand-subtitle">
-              Check your eligibility for national and state welfare programs
+              {currentUser.role === 'official' 
+                ? `Operator: ${currentUser.name} | ${currentUser.department || 'CSC Desk'}` 
+                : 'Check welfare scheme eligibility, required documents, and application steps'}
             </p>
           </div>
         </div>
 
         <div className="header-actions">
+          {/* User / Portal Switcher */}
+          <button
+            type="button"
+            className="action-btn user-portal-btn"
+            onClick={onOpenAuthModal}
+            title="Switch portal role or login"
+          >
+            <span>
+              {currentUser.isLoggedIn 
+                ? (currentUser.role === 'official' ? `Official: ${currentUser.name}` : `Citizen: ${currentUser.name}`)
+                : "Login / Switch Portal"}
+            </span>
+          </button>
+
+          {currentUser.isLoggedIn && (
+            <button
+              type="button"
+              className="action-btn logout-btn"
+              onClick={onLogout}
+              title="Logout"
+            >
+              Logout
+            </button>
+          )}
+
           {/* Backend Connection Status */}
           <button 
             type="button"
@@ -39,7 +71,7 @@ export function Header({
           >
             <span className="status-dot"></span>
             <span className="status-label">
-              {backendStatus.connected ? 'Python Server Active' : 'Offline Matcher'}
+              {backendStatus.connected ? 'Server Active' : 'Offline Mode'}
             </span>
           </button>
 

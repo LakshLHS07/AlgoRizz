@@ -7,6 +7,9 @@ import { SchemeCard } from './components/SchemeCard';
 import { SchemeModal } from './components/SchemeModal';
 import { ComparisonModal } from './components/ComparisonModal';
 import { BackendConfigModal } from './components/BackendConfigModal';
+import { FullScreenAuthPage } from './components/FullScreenAuthPage';
+import { OfficialDashboard } from './components/OfficialDashboard';
+import { ReceiptModal } from './components/ReceiptModal';
 import { SCHEMES_DATABASE } from './data/schemesData';
 import { matchSchemes, extractEntitiesFromPrompt } from './utils/nlpMatcher';
 import { DEFAULT_BACKEND_URL, pingBackend } from './utils/apiBridge';
@@ -29,6 +32,30 @@ export default function App() {
   const [profile, setProfile] = useState(INITIAL_PROFILE);
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
   const [isSearching, setIsSearching] = useState(false);
+
+  // Auth & Portal State
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('algorizz_user') || 'null');
+    } catch {
+      return null;
+    }
+  });
+
+  const [showAuthScreen, setShowAuthScreen] = useState(() => {
+    return !currentUser;
+  });
+
+  // Official Intake Records
+  const [intakeRecords, setIntakeRecords] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('algorizz_intake_records') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
+  const [activeReceiptRecord, setActiveReceiptRecord] = useState(null);
 
   // Modals & Drawers
   const [selectedScheme, setSelectedScheme] = useState(null);
@@ -67,6 +94,24 @@ export default function App() {
       console.error(e);
     }
   }, [bookmarkedIds]);
+
+  // Persist User
+  useEffect(() => {
+    try {
+      localStorage.setItem('algorizz_user', JSON.stringify(currentUser));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [currentUser]);
+
+  // Persist Intake Records
+  useEffect(() => {
+    try {
+      localStorage.setItem('algorizz_intake_records', JSON.stringify(intakeRecords));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [intakeRecords]);
 
   // Live NLP entity extraction from prompt
   const extractedEntities = useMemo(() => {
@@ -145,6 +190,70 @@ export default function App() {
     setShowingBookmarksOnly(false);
   };
 
+  const handleLogin = (userData) => {
+    setCurrentUser(userData);
+    setShowAuthScreen(false);
+
+    // If verified via Aadhaar KYC and Bank Statement, seed verified demographic & income values
+    if (userData.isAadhaarVerified) {
+      setProfile(prev => ({
+        ...prev,
+        age: userData.age || prev.age,
+        gender: userData.gender || prev.gender,
+        state: userData.state || prev.state,
+        income: userData.assessedIncome || prev.income
+      }));
+      setPrompt(`I am ${userData.name}, aged ${userData.age}, living in ${userData.state}, verified annual income of ₹${((userData.assessedIncome || 140000)/100000).toFixed(2)}L. Looking for eligible government welfare schemes.`);
+    }
+  };
+
+  const handleGuestAccess = () => {
+    setCurrentUser({
+      role: 'citizen',
+      name: 'Guest Citizen',
+      isLoggedIn: false
+    });
+    setShowAuthScreen(false);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setShowAuthScreen(true);
+  };
+
+  const handleOpenAuthScreen = () => {
+    setShowAuthScreen(true);
+  };
+
+  // Official Intake action
+  const handlePerformIntakeMatch = (citizenRecord) => {
+    setProfile({
+      age: citizenRecord.age,
+      gender: citizenRecord.gender,
+      state: citizenRecord.state,
+      income: citizenRecord.income,
+      category: citizenRecord.category,
+      occupation: citizenRecord.occupation,
+      hasLand: citizenRecord.hasLand,
+      isRural: true
+    });
+    setPrompt(`${citizenRecord.occupation} in ${citizenRecord.state} with annual income of ${citizenRecord.income}. ${citizenRecord.notes || ''}`);
+    
+    setIntakeRecords(prev => [citizenRecord, ...prev]);
+    setActiveReceiptRecord(citizenRecord);
+  };
+
+  // If Full-Screen Login Page is active, display it
+  if (showAuthScreen || !currentUser) {
+    return (
+      <FullScreenAuthPage
+        onLogin={handleLogin}
+        onGuestAccess={handleGuestAccess}
+        initialRole={currentUser ? currentUser.role : 'citizen'}
+      />
+    );
+  }
+
   return (
     <div className="app-layout">
       {/* Top Header */}
@@ -158,26 +267,63 @@ export default function App() {
         selectedLanguage={selectedLanguage}
         onChangeLanguage={setSelectedLanguage}
         showingBookmarksOnly={showingBookmarksOnly}
+        currentUser={currentUser}
+        onOpenAuthModal={handleOpenAuthScreen}
+        onLogout={handleLogout}
       />
 
       <main className="main-content">
-        {/* NLP Prompt Search Bar */}
-        <NLPPromptBar
-          prompt={prompt}
-          setPrompt={setPrompt}
-          onSearch={handleSearch}
-          isSearching={isSearching}
-          extractedEntities={extractedEntities}
-        />
+        {/* If Official Role: Render Official Intake Dashboard */}
+        {currentUser.role === 'official' ? (
+          <OfficialDashboard
+            currentUser={currentUser}
+            onPerformIntakeMatch={handlePerformIntakeMatch}
+            intakeRecords={intakeRecords}
+            onViewRecordReceipt={(rec) => setActiveReceiptRecord(rec)}
+          />
+        ) : (
+          /* If Citizen Role: Render Citizen Natural Language Search & Discovery */
+          <>
+            <div className="portal-indicator-banner">
+              <div className="citizen-status-tags">
+                <strong>Citizen Self-Service Portal</strong>
+                {currentUser.isAadhaarVerified && (
+                  <span className="verified-pill">Aadhaar Verified</span>
+                )}
+                {currentUser.isPanVerified && (
+                  <span className="verified-pill">PAN Verified</span>
+                )}
+                {currentUser.isBankVerified && (
+                  <span className="verified-pill">Bank & DBT Verified</span>
+                )}
+                <span> • Name: {currentUser.name}</span>
+              </div>
+              <button
+                type="button"
+                className="switch-to-official-btn"
+                onClick={handleOpenAuthScreen}
+              >
+                Switch to Official / CSC Mode
+              </button>
+            </div>
 
-        {/* Stats Strip */}
-        <StatsSection
-          totalSchemes={SCHEMES_DATABASE.length}
-          topMatchesCount={topMatchesCount}
-          highEligibilityCount={highEligibilityCount}
-        />
+            <NLPPromptBar
+              prompt={prompt}
+              setPrompt={setPrompt}
+              onSearch={handleSearch}
+              isSearching={isSearching}
+              extractedEntities={extractedEntities}
+            />
 
-        {/* Main Grid: Filters Sidebar + Results */}
+            <StatsSection
+              totalSchemes={SCHEMES_DATABASE.length}
+              topMatchesCount={topMatchesCount}
+              highEligibilityCount={highEligibilityCount}
+            />
+          </>
+        )}
+
+        {/* Results Grid */}
         <div className="app-main-grid">
           <ProfileDrawer
             profile={profile}
@@ -193,7 +339,7 @@ export default function App() {
                 {showingBookmarksOnly ? (
                   <span>Saved Schemes ({displayedSchemes.length})</span>
                 ) : (
-                  <span>Matching Schemes ({displayedSchemes.length})</span>
+                  <span>Assessed Matching Schemes ({displayedSchemes.length})</span>
                 )}
               </div>
 
@@ -239,7 +385,7 @@ export default function App() {
         </div>
       </main>
 
-      {/* Detail & Eligibility Modal */}
+      {/* Scheme Detail & Eligibility Modal */}
       {selectedScheme && (
         <SchemeModal
           scheme={selectedScheme}
@@ -270,6 +416,15 @@ export default function App() {
         backendStatus={backendStatus}
         setBackendStatus={setBackendStatus}
       />
+
+      {/* Official Beneficiary Receipt Modal */}
+      {activeReceiptRecord && (
+        <ReceiptModal
+          record={activeReceiptRecord}
+          matchedSchemes={matchedSchemes}
+          onClose={() => setActiveReceiptRecord(null)}
+        />
+      )}
     </div>
   );
 }
