@@ -20,12 +20,12 @@ export function BackendConfigModal({
     const isOnline = await pingBackend(backendUrl);
     setTesting(false);
     if (isOnline) {
-      setTestResult({ success: true, message: "Successfully connected to Python backend!" });
+      setTestResult({ success: true, message: "Successfully connected to Python backend." });
       setBackendStatus({ connected: true, url: backendUrl });
     } else {
       setTestResult({
         success: false,
-        message: `Could not reach ${backendUrl}. Ensure your Python/Gradio script is running with CORS enabled or run in client-side NLP mode.`
+        message: `Could not connect to ${backendUrl}. Ensure your Python script is running with CORS enabled or use the built-in offline matcher.`
       });
       setBackendStatus({ connected: false, url: backendUrl });
     }
@@ -36,21 +36,21 @@ export function BackendConfigModal({
       <div className="modal-dialog-medium" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div>
-            <span className="modal-category-tag">Architecture & Integration</span>
-            <h3 className="modal-scheme-title">Python Matching Engine Bridge</h3>
+            <span className="modal-category-tag">Backend Settings</span>
+            <h3 className="modal-scheme-title">Python Matching Engine Connection</h3>
           </div>
           <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close modal">
-            ✕
+            Close
           </button>
         </div>
 
         <div className="modal-body-padding">
           <p className="backend-modal-desc">
-            This React/Node.js frontend communicates with your Python stack (<strong>pandas</strong>, <strong>sentence-transformers</strong>, <strong>BeautifulSoup</strong>, and <strong>Gradio/FastAPI</strong>).
+            Connect this frontend to your Python backend using pandas, sentence-transformers, and Gradio/FastAPI.
           </p>
 
           <div className="backend-input-group">
-            <label htmlFor="backend-url-input">Python Backend URL (Gradio / FastAPI / Flask)</label>
+            <label htmlFor="backend-url-input">Python Server URL (Gradio / FastAPI)</label>
             <div className="backend-input-row">
               <input
                 id="backend-url-input"
@@ -66,29 +66,28 @@ export function BackendConfigModal({
                 onClick={handleTestConnection}
                 disabled={testing}
               >
-                {testing ? "Testing..." : "Test Ping"}
+                {testing ? "Testing..." : "Test Connection"}
               </button>
             </div>
           </div>
 
           {testResult && (
             <div className={`backend-result-alert ${testResult.success ? 'success' : 'warning'}`}>
-              {testResult.success ? "🟢" : "🟠"} {testResult.message}
+              {testResult.message}
             </div>
           )}
 
           <div className="python-snippet-box">
-            <div className="snippet-title">💡 How to launch the Python Gradio/FastAPI matching server:</div>
+            <div className="snippet-title">Example Python Gradio server setup:</div>
             <pre className="python-code">
-{`# example_backend.py
-import gradio as gr
+{`import gradio as gr
 from sentence_transformers import SentenceTransformer
 import pandas as pd
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 def match_schemes(user_prompt, income, state, occupation):
-    # Semantic search with embeddings + rule filters
+    # Semantic search with sentence embeddings + rule filters
     return {"status": "matched", "schemes": [...]}
 
 demo = gr.Interface(
@@ -103,7 +102,7 @@ demo.launch(server_name="127.0.0.1", server_port=7860)`}
 
         <div className="modal-footer">
           <button type="button" className="primary-view-btn" onClick={onClose}>
-            Save & Continue
+            Save and Close
           </button>
         </div>
       </div>

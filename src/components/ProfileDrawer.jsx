@@ -16,18 +16,15 @@ export function ProfileDrawer({
   };
 
   const formatLakhs = (val) => {
-    return `₹${(val / 100000).toFixed(2)} Lakhs / yr`;
+    return `₹${(val / 100000).toFixed(2)} Lakhs / year`;
   };
 
   return (
     <aside className="profile-filters-card">
       <div className="filters-header">
-        <div className="filters-title">
-          <span className="filter-icon">⚙️</span>
-          <h3>Applicant Profile & Filters</h3>
-        </div>
+        <h3 className="filters-title">Filter by Your Details</h3>
         <button type="button" className="reset-btn" onClick={onReset}>
-          Reset
+          Reset All
         </button>
       </div>
 
@@ -49,7 +46,7 @@ export function ProfileDrawer({
 
       <div className="filter-group">
         <label className="filter-label" htmlFor="occupation-select">
-          Primary Occupation
+          Your Occupation
         </label>
         <select
           id="occupation-select"
@@ -59,7 +56,7 @@ export function ProfileDrawer({
         >
           {OCCUPATIONS.map(occ => (
             <option key={occ} value={occ}>
-              {occ === "All Occupations" ? "All Occupations / Any" : occ.toUpperCase()}
+              {occ === "All Occupations" ? "All Occupations (Any)" : occ.charAt(0).toUpperCase() + occ.slice(1)}
             </option>
           ))}
         </select>
@@ -120,7 +117,7 @@ export function ProfileDrawer({
 
       <div className="filter-row-two-col">
         <div className="filter-group">
-          <label className="filter-label" htmlFor="state-select">State / UT</label>
+          <label className="filter-label" htmlFor="state-select">State or UT</label>
           <select
             id="state-select"
             className="filter-select"
@@ -144,8 +141,8 @@ export function ProfileDrawer({
             <option value="All">All Categories</option>
             <option value="General">General</option>
             <option value="OBC">OBC</option>
-            <option value="SC">SC (Scheduled Caste)</option>
-            <option value="ST">ST (Scheduled Tribe)</option>
+            <option value="SC">SC</option>
+            <option value="ST">ST</option>
             <option value="EWS">EWS</option>
           </select>
         </div>
@@ -158,15 +155,8 @@ export function ProfileDrawer({
             checked={profile.hasLand}
             onChange={(e) => handleChange('hasLand', e.target.checked)}
           />
-          <span>Owns Cultivable Agricultural Land</span>
+          <span>Owns agricultural land</span>
         </label>
-      </div>
-
-      <div className="nlp-engine-stats-box">
-        <div className="stats-header">🤖 Semantic Matching Engine</div>
-        <p className="stats-text">
-          Weights TF-IDF keyword embeddings from user description alongside hard income, occupation, and demographic eligibility criteria.
-        </p>
       </div>
     </aside>
   );

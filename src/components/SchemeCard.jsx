@@ -9,9 +9,9 @@ export function SchemeCard({
   onToggleCompare
 }) {
   const getScoreColor = (score) => {
-    if (score >= 80) return '#10b981'; // Emerald
-    if (score >= 55) return '#f59e0b'; // Amber
-    return '#ef4444'; // Red
+    if (score >= 80) return '#10b981';
+    if (score >= 55) return '#f59e0b';
+    return '#ef4444';
   };
 
   return (
@@ -30,12 +30,9 @@ export function SchemeCard({
             background: `${getScoreColor(scheme.matchScore)}15`
           }}
         >
-          <div 
-            className="score-circle" 
-            style={{ backgroundColor: getScoreColor(scheme.matchScore) }}
-          >
+          <span className="score-number" style={{ color: getScoreColor(scheme.matchScore) }}>
             {scheme.matchScore}%
-          </div>
+          </span>
           <span className="match-label" style={{ color: getScoreColor(scheme.matchScore) }}>
             {scheme.matchTier}
           </span>
@@ -52,23 +49,22 @@ export function SchemeCard({
 
       {/* Benefit Highlight Box */}
       <div className="benefit-highlight-box">
-        <div className="benefit-icon">🎁</div>
         <div className="benefit-details">
-          <span className="benefit-label">Key Benefit / Assistance:</span>
+          <span className="benefit-label">Benefit / Assistance:</span>
           <strong className="benefit-value">{scheme.benefitAmount}</strong>
         </div>
       </div>
 
-      {/* Explainable AI Reasoning Chips */}
+      {/* Match Reasons */}
       <div className="match-reasons-section">
         {scheme.matchReasons && scheme.matchReasons.slice(0, 3).map((reason, idx) => (
           <span key={idx} className="reason-chip positive">
-            ✓ {reason}
+            [Eligible] {reason}
           </span>
         ))}
         {scheme.warningReasons && scheme.warningReasons.slice(0, 1).map((warn, idx) => (
           <span key={idx} className="reason-chip warning">
-            ⚠️ {warn}
+            [Note] {warn}
           </span>
         ))}
       </div>
@@ -76,7 +72,7 @@ export function SchemeCard({
       {/* Tags */}
       <div className="scheme-tags-row">
         {scheme.tags.slice(0, 4).map(t => (
-          <span key={t} className="tag-pill">#{t}</span>
+          <span key={t} className="tag-pill">{t}</span>
         ))}
       </div>
 
@@ -87,8 +83,7 @@ export function SchemeCard({
           className="primary-view-btn"
           onClick={() => onSelect(scheme)}
         >
-          <span>Check Eligibility & Docs</span>
-          <span className="arrow-icon">→</span>
+          View Eligibility and Documents
         </button>
 
         <div className="secondary-icon-actions">
@@ -101,7 +96,7 @@ export function SchemeCard({
             }}
             title={isCompared ? "Remove from comparison" : "Add to comparison"}
           >
-            ⚖️
+            {isCompared ? "Comparing" : "Compare"}
           </button>
 
           <button
@@ -113,7 +108,7 @@ export function SchemeCard({
             }}
             title={isBookmarked ? "Remove from saved" : "Save scheme"}
           >
-            {isBookmarked ? "⭐" : "☆"}
+            {isBookmarked ? "Saved" : "Save"}
           </button>
         </div>
       </div>

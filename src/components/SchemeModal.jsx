@@ -7,7 +7,7 @@ export function SchemeModal({
   isBookmarked,
   onToggleBookmark
 }) {
-  const [activeTab, setActiveTab] = useState('eligibility'); // eligibility | documents | apply
+  const [activeTab, setActiveTab] = useState('eligibility');
   const [checkedDocs, setCheckedDocs] = useState({});
 
   if (!scheme) return null;
@@ -23,46 +23,45 @@ export function SchemeModal({
     window.print();
   };
 
-  // Evaluate each criteria against current userProfile
   const criteriaChecks = [
     {
       title: "Age Criterion",
       requirement: `${scheme.eligibility.minAge} to ${scheme.eligibility.maxAge} Years`,
       userVal: `${userProfile.age} Years`,
       passed: userProfile.age >= scheme.eligibility.minAge && userProfile.age <= scheme.eligibility.maxAge,
-      note: userProfile.age < scheme.eligibility.minAge ? "Applicant is below minimum age requirement" : userProfile.age > scheme.eligibility.maxAge ? "Applicant exceeds maximum age limit" : "Age verified"
+      note: userProfile.age < scheme.eligibility.minAge ? "Applicant is below minimum age requirement" : userProfile.age > scheme.eligibility.maxAge ? "Applicant exceeds maximum age limit" : "Age requirement met"
     },
     {
-      title: "Income Ceiling",
+      title: "Income Limit",
       requirement: `Up to ₹${(scheme.eligibility.maxIncome / 100000).toFixed(1)} Lakhs / year`,
       userVal: `₹${(userProfile.income / 100000).toFixed(2)} Lakhs`,
       passed: userProfile.income <= scheme.eligibility.maxIncome,
-      note: userProfile.income <= scheme.eligibility.maxIncome ? "Income is within prescribed poverty / low-income threshold" : "Income exceeds scheme maximum limit"
+      note: userProfile.income <= scheme.eligibility.maxIncome ? "Income is within limit" : "Income exceeds maximum threshold"
     },
     {
       title: "Target Occupation",
       requirement: scheme.eligibility.occupations.join(", "),
       userVal: userProfile.occupation,
       passed: scheme.eligibility.occupations.includes("all") || scheme.eligibility.occupations.includes(userProfile.occupation),
-      note: scheme.eligibility.occupations.includes("all") ? "Open to all occupational sectors" : `Specifically designed for ${scheme.eligibility.occupations.join(", ")}`
+      note: scheme.eligibility.occupations.includes("all") ? "Open to all occupations" : `Designed for ${scheme.eligibility.occupations.join(", ")}`
     },
     {
-      title: "Gender & Social Category",
+      title: "Gender and Category",
       requirement: `Gender: ${scheme.eligibility.genders.join("/")} | Category: ${scheme.eligibility.categories.join(", ")}`,
       userVal: `Gender: ${userProfile.gender} | Category: ${userProfile.category}`,
       passed: (scheme.eligibility.genders.includes("all") || scheme.eligibility.genders.includes(userProfile.gender)) &&
               (scheme.eligibility.categories.includes(userProfile.category) || scheme.eligibility.categories.includes("General")),
-      note: "Demographic qualification requirements"
+      note: "Demographic requirements"
     }
   ];
 
   if (scheme.eligibility.requiresLand) {
     criteriaChecks.push({
-      title: "Landholding Requirement",
+      title: "Land Requirement",
       requirement: "Cultivable Agricultural Land Ownership",
       userVal: userProfile.hasLand ? "Owns land" : "No land",
       passed: userProfile.hasLand,
-      note: userProfile.hasLand ? "Land records verified" : "Requires valid agricultural land records (Khata/7-12)"
+      note: userProfile.hasLand ? "Land ownership confirmed" : "Requires agricultural land records"
     });
   }
 
@@ -77,11 +76,11 @@ export function SchemeModal({
           <div className="modal-title-wrap">
             <span className="modal-category-tag">{scheme.category}</span>
             <h2 className="modal-scheme-title">{scheme.name}</h2>
-            <span className="modal-ministry-tag">🏛️ {scheme.ministry}</span>
+            <span className="modal-ministry-tag">{scheme.ministry}</span>
           </div>
 
           <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close modal">
-            ✕
+            Close
           </button>
         </div>
 
@@ -108,21 +107,21 @@ export function SchemeModal({
             className={`tab-nav-btn ${activeTab === 'eligibility' ? 'active' : ''}`}
             onClick={() => setActiveTab('eligibility')}
           >
-            📋 Eligibility Verification ({passedCount}/{totalCount})
+            Eligibility ({passedCount}/{totalCount})
           </button>
           <button
             type="button"
             className={`tab-nav-btn ${activeTab === 'documents' ? 'active' : ''}`}
             onClick={() => setActiveTab('documents')}
           >
-            📑 Required Documents ({scheme.documents.length})
+            Required Documents ({scheme.documents.length})
           </button>
           <button
             type="button"
             className={`tab-nav-btn ${activeTab === 'apply' ? 'active' : ''}`}
             onClick={() => setActiveTab('apply')}
           >
-            🗺️ How to Apply & Portal
+            How to Apply
           </button>
         </div>
 
@@ -135,11 +134,11 @@ export function SchemeModal({
                   <span>{scheme.matchScore}%</span>
                 </div>
                 <div>
-                  <h4>NLP & Rule Evaluation Summary</h4>
+                  <h4>Eligibility Overview</h4>
                   <p>
                     {passedCount === totalCount
-                      ? "🎉 Excellent match! Your profile meets all official eligibility requirements for this welfare program."
-                      : `You satisfy ${passedCount} out of ${totalCount} key eligibility criteria. Review specific items below.`}
+                      ? "Your profile meets all standard eligibility criteria for this scheme."
+                      : `You satisfy ${passedCount} out of ${totalCount} criteria. See details below.`}
                   </p>
                 </div>
               </div>
@@ -148,7 +147,7 @@ export function SchemeModal({
                 <table className="criteria-table">
                   <thead>
                     <tr>
-                      <th>Rule / Criterion</th>
+                      <th>Criterion</th>
                       <th>Official Requirement</th>
                       <th>Your Profile</th>
                       <th>Status</th>
@@ -165,7 +164,7 @@ export function SchemeModal({
                         <td>{crit.userVal}</td>
                         <td>
                           <span className={`status-badge ${crit.passed ? 'passed' : 'failed'}`}>
-                            {crit.passed ? '✓ Eligible' : '✕ Action Needed'}
+                            {crit.passed ? 'Eligible' : 'Not Met'}
                           </span>
                         </td>
                       </tr>
@@ -176,7 +175,7 @@ export function SchemeModal({
 
               {scheme.eligibility.specialConditions && (
                 <div className="special-conditions-callout">
-                  <strong>⚠️ Special Scheme Guidelines:</strong>
+                  <strong>Special Conditions:</strong>
                   <p>{scheme.eligibility.specialConditions}</p>
                 </div>
               )}
@@ -186,9 +185,9 @@ export function SchemeModal({
           {activeTab === 'documents' && (
             <div className="documents-tab-pane">
               <div className="docs-intro-row">
-                <p>Prepare the following documents before submitting your application:</p>
+                <p>Gather the following documents before applying:</p>
                 <button type="button" className="print-docs-btn" onClick={handlePrintChecklist}>
-                  🖨️ Print Readiness Checklist
+                  Print Checklist
                 </button>
               </div>
 
@@ -210,12 +209,12 @@ export function SchemeModal({
                       />
                       <div className="doc-info">
                         <label htmlFor={`doc-${idx}`} className="doc-name">
-                          {doc.name} {doc.required && <span className="req-star">*Mandatory</span>}
+                          {doc.name} {doc.required && <span className="req-star">(Mandatory)</span>}
                         </label>
                         <p className="doc-desc">{doc.desc}</p>
                       </div>
                       <span className="doc-status-indicator">
-                        {isChecked ? "✅ Ready" : "⭕ Not Ready"}
+                        {isChecked ? "Ready" : "Needed"}
                       </span>
                     </div>
                   );
@@ -226,7 +225,7 @@ export function SchemeModal({
 
           {activeTab === 'apply' && (
             <div className="apply-tab-pane">
-              <h4 className="steps-title">Step-by-Step Application Roadmap</h4>
+              <h4 className="steps-title">Application Steps</h4>
               <div className="steps-timeline">
                 {scheme.applicationSteps.map((step, idx) => (
                   <div key={idx} className="step-timeline-item">
@@ -240,8 +239,8 @@ export function SchemeModal({
 
               <div className="official-portal-box">
                 <div>
-                  <strong>Official Government Portal</strong>
-                  <p>Visit the verified government or ministry portal for direct e-filing.</p>
+                  <strong>Official Portal</strong>
+                  <p>Visit the official government website to submit your application directly.</p>
                 </div>
                 <a
                   href={scheme.officialUrl}
@@ -249,8 +248,7 @@ export function SchemeModal({
                   rel="noopener noreferrer"
                   className="external-portal-link"
                 >
-                  <span>Open {scheme.officialUrl.replace('https://', '')}</span>
-                  <span>↗</span>
+                  Visit Portal
                 </a>
               </div>
             </div>
@@ -264,7 +262,7 @@ export function SchemeModal({
             className={`save-modal-btn ${isBookmarked ? 'active' : ''}`}
             onClick={() => onToggleBookmark(scheme.id)}
           >
-            {isBookmarked ? "⭐ Saved in Bookmarks" : "☆ Save to My Schemes"}
+            {isBookmarked ? "Saved in Bookmarks" : "Save Scheme"}
           </button>
           <button type="button" className="close-btn-secondary" onClick={onClose}>
             Close

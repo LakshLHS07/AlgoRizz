@@ -9,81 +9,78 @@ export function Header({
   onOpenComparison,
   selectedLanguage,
   onChangeLanguage,
-  totalSchemesCount
+  showingBookmarksOnly
 }) {
   return (
     <header className="app-header">
       <div className="header-container">
         <div className="brand-section">
-          <div className="brand-logo-glow">
-            <span className="brand-icon">🏛️</span>
+          <div className="brand-badge-box">
+            <span className="brand-initials">AS</span>
           </div>
           <div>
             <div className="brand-title-row">
-              <h1 className="brand-title">AlgoRizz <span className="brand-badge">SchemeSetu AI</span></h1>
-              <span className="live-nlp-pill">⚡ NLP Semantic Matcher</span>
+              <h1 className="brand-title">AlgoRizz SchemeSetu</h1>
+              <span className="live-nlp-pill">Government Scheme Matcher</span>
             </div>
             <p className="brand-subtitle">
-              Intelligent Government & NGO Welfare Scheme Discovery powered by Natural Language Processing
+              Check your eligibility for national and state welfare programs
             </p>
           </div>
         </div>
 
         <div className="header-actions">
-          {/* Python Backend Status Pill */}
+          {/* Backend Connection Status */}
           <button 
             type="button"
             className={`backend-pill ${backendStatus.connected ? 'connected' : 'standalone'}`}
             onClick={onOpenBackendModal}
-            title="Configure Python Backend Bridge"
+            title="Backend settings"
           >
             <span className="status-dot"></span>
             <span className="status-label">
-              {backendStatus.connected ? 'Python Gradio Connected' : 'Client-Side NLP Mode'}
+              {backendStatus.connected ? 'Python Server Active' : 'Offline Matcher'}
             </span>
-            <span className="settings-gear">⚙️</span>
           </button>
 
-          {/* Comparison Tray Button */}
+          {/* Compare Button */}
           {comparedIds.length > 0 && (
             <button 
               type="button"
-              className="action-btn compare-btn"
+              className="action-btn"
               onClick={onOpenComparison}
             >
-              <span>⚖️ Compare</span>
+              <span>Compare</span>
               <span className="badge-count">{comparedIds.length}</span>
             </button>
           )}
 
-          {/* Bookmarks Button */}
+          {/* Bookmarks Toggle Button */}
           <button 
             type="button"
-            className="action-btn bookmark-nav-btn"
+            className={`action-btn ${showingBookmarksOnly ? 'active-toggle' : ''}`}
             onClick={onOpenBookmarks}
           >
-            <span>⭐ Saved</span>
+            <span>Saved Schemes</span>
             {bookmarkedIds.length > 0 && (
               <span className="badge-count">{bookmarkedIds.length}</span>
             )}
           </button>
 
           {/* Language Selector */}
-          <div className="lang-dropdown-wrapper">
-            <select 
-              value={selectedLanguage} 
-              onChange={(e) => onChangeLanguage(e.target.value)}
-              className="lang-select"
-              aria-label="Select Language"
-            >
-              <option value="en">🌐 English</option>
-              <option value="hi">🌐 हिन्दी (Hindi)</option>
-              <option value="mr">🌐 मराठी (Marathi)</option>
-              <option value="ta">🌐 தமிழ் (Tamil)</option>
-              <option value="te">🌐 తెలుగు (Telugu)</option>
-              <option value="bn">🌐 বাংলা (Bengali)</option>
-            </select>
-          </div>
+          <select 
+            value={selectedLanguage} 
+            onChange={(e) => onChangeLanguage(e.target.value)}
+            className="lang-select"
+            aria-label="Language selection"
+          >
+            <option value="en">English</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+            <option value="mr">मराठी (Marathi)</option>
+            <option value="ta">தமிழ் (Tamil)</option>
+            <option value="te">తెలుగు (Telugu)</option>
+            <option value="bn">বাংলা (Bengali)</option>
+          </select>
         </div>
       </div>
     </header>

@@ -106,7 +106,6 @@ export default function App() {
 
   const handleSearch = () => {
     setIsSearching(true);
-    // Sync extracted NLP values into profile automatically if present
     if (extractedEntities.age) setProfile(p => ({ ...p, age: extractedEntities.age }));
     if (extractedEntities.gender) setProfile(p => ({ ...p, gender: extractedEntities.gender }));
     if (extractedEntities.state) setProfile(p => ({ ...p, state: extractedEntities.state }));
@@ -117,7 +116,7 @@ export default function App() {
 
     setTimeout(() => {
       setIsSearching(false);
-    }, 350);
+    }, 250);
   };
 
   const handleToggleBookmark = (id) => {
@@ -158,7 +157,7 @@ export default function App() {
         onOpenComparison={() => setIsComparisonModalOpen(true)}
         selectedLanguage={selectedLanguage}
         onChangeLanguage={setSelectedLanguage}
-        totalSchemesCount={SCHEMES_DATABASE.length}
+        showingBookmarksOnly={showingBookmarksOnly}
       />
 
       <main className="main-content">
@@ -192,9 +191,9 @@ export default function App() {
             <div className="results-header-bar">
               <div className="results-count-tag">
                 {showingBookmarksOnly ? (
-                  <span>⭐ Saved Welfare Schemes ({displayedSchemes.length})</span>
+                  <span>Saved Schemes ({displayedSchemes.length})</span>
                 ) : (
-                  <span>🎯 AI Matched Schemes ({displayedSchemes.length})</span>
+                  <span>Matching Schemes ({displayedSchemes.length})</span>
                 )}
               </div>
 
@@ -204,19 +203,18 @@ export default function App() {
                   className="action-btn"
                   onClick={() => setShowingBookmarksOnly(false)}
                 >
-                  ← Back to All Matched Schemes
+                  Back to All Schemes
                 </button>
               )}
             </div>
 
             {displayedSchemes.length === 0 ? (
               <div className="empty-results-box">
-                <div className="empty-icon">🔎</div>
-                <h4 className="empty-title">No Schemes Matched</h4>
+                <h4 className="empty-title">No Schemes Found</h4>
                 <p className="empty-desc">
                   {showingBookmarksOnly
-                    ? "You haven't bookmarked any schemes yet. Click the star icon on any scheme card to save it."
-                    : "Try broadening your category filter or adjusting your annual income threshold in the profile sidebar."}
+                    ? "You have not saved any schemes yet. Click 'Save' on any scheme card to add it here."
+                    : "Try broadening your category filter or adjusting your income and age in the sidebar."}
                 </p>
                 <button type="button" className="primary-view-btn" onClick={handleResetFilters} style={{ maxWidth: 200, margin: '0 auto' }}>
                   Reset Filters

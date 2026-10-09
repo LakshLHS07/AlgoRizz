@@ -14,15 +14,15 @@ export function ComparisonModal({
       <div className="modal-dialog-extra-large" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div>
-            <span className="modal-category-tag">Comparison Engine</span>
-            <h2 className="modal-scheme-title">Side-by-Side Scheme Analysis ({comparedSchemes.length}/3)</h2>
+            <span className="modal-category-tag">Scheme Comparison</span>
+            <h2 className="modal-scheme-title">Side-by-Side Comparison ({comparedSchemes.length}/3)</h2>
           </div>
           <div className="comparison-header-actions">
             <button type="button" className="clear-comparison-btn" onClick={onClearAll}>
               Clear All
             </button>
             <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close modal">
-              ✕
+              Close
             </button>
           </div>
         </div>
@@ -31,7 +31,7 @@ export function ComparisonModal({
           <table className="comparison-table">
             <thead>
               <tr>
-                <th className="feature-col">Feature / Criterion</th>
+                <th className="feature-col">Feature</th>
                 {comparedSchemes.map(s => (
                   <th key={s.id} className="scheme-col">
                     <div className="scheme-col-header">
@@ -42,7 +42,7 @@ export function ComparisonModal({
                         onClick={() => onRemoveScheme(s.id)}
                         title="Remove scheme"
                       >
-                        ✕ Remove
+                        Remove
                       </button>
                     </div>
                   </th>
@@ -82,23 +82,23 @@ export function ComparisonModal({
               </tr>
 
               <tr>
-                <td className="feature-col"><strong>Target Demographic</strong></td>
+                <td className="feature-col"><strong>Target Group</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>{s.targetGroup}</td>
                 ))}
               </tr>
 
               <tr>
-                <td className="feature-col"><strong>Max Income Ceiling</strong></td>
+                <td className="feature-col"><strong>Max Income Limit</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>
-                    ₹{(s.eligibility.maxIncome / 100000).toFixed(1)} Lakhs / yr
+                    ₹{(s.eligibility.maxIncome / 100000).toFixed(1)} Lakhs / year
                   </td>
                 ))}
               </tr>
 
               <tr>
-                <td className="feature-col"><strong>Allowed Occupations</strong></td>
+                <td className="feature-col"><strong>Target Occupations</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>
                     {s.eligibility.occupations.join(", ")}
@@ -107,12 +107,12 @@ export function ComparisonModal({
               </tr>
 
               <tr>
-                <td className="feature-col"><strong>Mandatory Documents</strong></td>
+                <td className="feature-col"><strong>Required Documents</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>
                     <ul className="comp-docs-list">
                       {s.documents.map((d, i) => (
-                        <li key={i}>{d.name} {d.required && '*'}</li>
+                        <li key={i}>{d.name} {d.required && '(Mandatory)'}</li>
                       ))}
                     </ul>
                   </td>
@@ -131,7 +131,7 @@ export function ComparisonModal({
                         onSelectScheme(s);
                       }}
                     >
-                      View Full Details →
+                      View Full Details
                     </button>
                   </td>
                 ))}
