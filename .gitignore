@@ -9,9 +9,17 @@ venv/
 *.egg-info/
 .pytest_cache/
 
+# Databases
+*.sqlite3
+*.db
+database/*.sqlite3
+database/*.db
+
 # Node / JS
 node_modules/
+frontend/node_modules/
 dist/
+frontend/dist/
 dist-ssr/
 *.local
 
