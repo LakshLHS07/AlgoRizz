@@ -1,13 +1,17 @@
 import React from 'react';
 import { INDIAN_STATES, OCCUPATIONS, SCHEME_CATEGORIES } from '../data/schemesData';
+import { getTranslation } from '../utils/translations';
 
 export function ProfileDrawer({
   profile,
   setProfile,
   categoryFilter,
   setCategoryFilter,
-  onReset
+  onReset,
+  selectedLanguage = 'en'
 }) {
+  const t = getTranslation(selectedLanguage);
+
   const handleChange = (field, value) => {
     setProfile(prev => ({
       ...prev,
@@ -24,10 +28,10 @@ export function ProfileDrawer({
       <div className="filter-panel-header">
         <div className="filter-header-title">
           <span className="filter-badge">PARAMETERS</span>
-          <h3>Demographic Filters</h3>
+          <h3>{t.filterTitle}</h3>
         </div>
         <button type="button" className="classic-btn-reset" onClick={onReset} title="Reset all filters to default">
-          Reset All
+          {t.resetAll}
         </button>
       </div>
 
@@ -35,7 +39,7 @@ export function ProfileDrawer({
         {/* Category Filter */}
         <div className="filter-field-block">
           <label className="filter-field-label" htmlFor="cat-filter">
-            Scheme Sector / Ministry Category
+            {t.schemeCategory}
           </label>
           <select
             id="cat-filter"
@@ -52,7 +56,7 @@ export function ProfileDrawer({
         {/* Occupation */}
         <div className="filter-field-block">
           <label className="filter-field-label" htmlFor="occupation-select">
-            Applicant Occupation
+            {t.occupation}
           </label>
           <select
             id="occupation-select"
@@ -72,7 +76,7 @@ export function ProfileDrawer({
         <div className="filter-field-block">
           <div className="income-header-row">
             <label className="filter-field-label" htmlFor="income-range">
-              Annual Family Income
+              {t.annualIncome}
             </label>
             <span className="income-pill-value">{formatLakhs(profile.income)}</span>
           </div>
@@ -97,7 +101,7 @@ export function ProfileDrawer({
         {/* Age and Gender */}
         <div className="filter-fields-row">
           <div className="filter-field-block half-width">
-            <label className="filter-field-label" htmlFor="age-input">Age (Years)</label>
+            <label className="filter-field-label" htmlFor="age-input">{t.ageYears}</label>
             <input
               id="age-input"
               type="number"
@@ -110,7 +114,7 @@ export function ProfileDrawer({
           </div>
 
           <div className="filter-field-block half-width">
-            <label className="filter-field-label" htmlFor="gender-select">Gender</label>
+            <label className="filter-field-label" htmlFor="gender-select">{t.gender}</label>
             <select
               id="gender-select"
               className="classic-dropdown-select"
@@ -128,7 +132,7 @@ export function ProfileDrawer({
         {/* State and Social Category */}
         <div className="filter-fields-row">
           <div className="filter-field-block half-width">
-            <label className="filter-field-label" htmlFor="state-select">State / UT</label>
+            <label className="filter-field-label" htmlFor="state-select">{t.stateUt}</label>
             <select
               id="state-select"
               className="classic-dropdown-select"
@@ -142,7 +146,7 @@ export function ProfileDrawer({
           </div>
 
           <div className="filter-field-block half-width">
-            <label className="filter-field-label" htmlFor="category-select">Category</label>
+            <label className="filter-field-label" htmlFor="category-select">{t.socialCategory}</label>
             <select
               id="category-select"
               className="classic-dropdown-select"
@@ -159,7 +163,7 @@ export function ProfileDrawer({
           </div>
         </div>
 
-        {/* Land Ownership & Rural Area */}
+        {/* Land Ownership */}
         <div className="filter-checkbox-strip">
           <label className="classic-checkbox-label">
             <input
@@ -167,7 +171,7 @@ export function ProfileDrawer({
               checked={profile.hasLand}
               onChange={(e) => handleChange('hasLand', e.target.checked)}
             />
-            <span>Applicant owns agricultural land holding</span>
+            <span>{t.landOwner}</span>
           </label>
         </div>
       </div>

@@ -1,13 +1,18 @@
 import React from 'react';
+import { getTranslation } from '../utils/translations';
+import { getLocalizedScheme } from '../utils/schemeLocalization';
 
 export function ReceiptModal({
   record,
-  matchedSchemes,
-  onClose
+  matchedSchemes: rawMatchedSchemes,
+  onClose,
+  selectedLanguage = 'en'
 }) {
   if (!record) return null;
 
-  const topSchemes = (matchedSchemes || []).slice(0, 4);
+  const t = getTranslation(selectedLanguage);
+  const matchedSchemes = (rawMatchedSchemes || []).map(s => getLocalizedScheme(s, selectedLanguage));
+  const topSchemes = matchedSchemes.slice(0, 4);
 
   const handlePrint = () => {
     window.print();
@@ -21,12 +26,12 @@ export function ReceiptModal({
             <span className="modal-category-tag">Official Intake Docket</span>
             <h2 className="modal-scheme-title">Beneficiary Scheme Eligibility Receipt</h2>
           </div>
-          <div className="receipt-header-btns">
+          <div className="receipt-header-btns" style={{ display: 'flex', gap: '0.5rem' }}>
             <button type="button" className="primary-action-button" onClick={handlePrint}>
-              Print Receipt
+              {t.printReceipt}
             </button>
             <button type="button" className="modal-close-btn" onClick={onClose}>
-              Close
+              {t.close}
             </button>
           </div>
         </div>
@@ -34,7 +39,7 @@ export function ReceiptModal({
         <div className="receipt-content-body printable-area">
           {/* Government / CSC Official Heading */}
           <div className="receipt-gov-header">
-            <h3>Government of India / State Welfare Administration</h3>
+            <h3>{t.govIndia} / State Welfare Administration</h3>
             <h4>Citizen Scheme Intake & Eligibility Assessment Slip</h4>
             <div className="receipt-ref-row">
               <span><strong>Docket Ref No:</strong> {record.id}</span>
@@ -93,8 +98,8 @@ export function ReceiptModal({
                   <tr key={scheme.id}>
                     <td><strong>{scheme.name}</strong></td>
                     <td>{scheme.ministry}</td>
-                    <td>{scheme.benefitAmount}</td>
-                    <td><strong>{scheme.matchScore}% (Eligible)</strong></td>
+                    <td><strong style={{ color: '#15803d' }}>{scheme.benefitAmount}</strong></td>
+                    <td><strong>{scheme.matchScore}% ({t.eligibleStamp})</strong></td>
                   </tr>
                 ))}
               </tbody>
@@ -122,10 +127,10 @@ export function ReceiptModal({
 
         <div className="modal-footer no-print">
           <button type="button" className="primary-action-button" onClick={handlePrint}>
-            Print Official Receipt
+            {t.printReceipt}
           </button>
           <button type="button" className="close-btn-secondary" onClick={onClose}>
-            Close
+            {t.close}
           </button>
         </div>
       </div>

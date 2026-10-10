@@ -1,4 +1,5 @@
 import React from 'react';
+import { getTranslation } from '../utils/translations';
 
 export function SchemeCard({
   scheme,
@@ -6,8 +7,10 @@ export function SchemeCard({
   isBookmarked,
   onToggleBookmark,
   isCompared,
-  onToggleCompare
+  onToggleCompare,
+  selectedLanguage = 'en'
 }) {
+  const t = getTranslation(selectedLanguage);
   const isHighMatch = scheme.matchScore >= 80;
 
   return (
@@ -36,7 +39,7 @@ export function SchemeCard({
           {/* Match Score Stamp */}
           <div className={`eligibility-stamp-badge ${isHighMatch ? 'stamp-eligible' : 'stamp-moderate'}`}>
             <span className="stamp-score">{scheme.matchScore}%</span>
-            <span className="stamp-status">{isHighMatch ? 'ELIGIBLE' : 'ASSESSED'}</span>
+            <span className="stamp-status">{isHighMatch ? t.eligibleStamp : t.assessedStamp}</span>
           </div>
         </div>
 
@@ -50,15 +53,15 @@ export function SchemeCard({
           <table className="classic-mini-table">
             <tbody>
               <tr>
-                <td className="param-label">Financial Benefit:</td>
+                <td className="param-label">{t.financialBenefit}</td>
                 <td className="param-value highlight-green"><strong>{scheme.benefitAmount}</strong></td>
               </tr>
               <tr>
-                <td className="param-label">Target Beneficiary:</td>
+                <td className="param-label">{t.targetBeneficiary}</td>
                 <td className="param-value">{scheme.targetAudience || 'Eligible Citizens'}</td>
               </tr>
               <tr>
-                <td className="param-label">Application Mode:</td>
+                <td className="param-label">{t.applicationMode}</td>
                 <td className="param-value">{scheme.applicationMode || 'Online & CSC Counters'}</td>
               </tr>
             </tbody>
@@ -88,7 +91,7 @@ export function SchemeCard({
             className="classic-btn-primary"
             onClick={() => onSelect(scheme)}
           >
-            View Scheme Guidelines & Checklist →
+            {t.viewGuidelines}
           </button>
 
           <div className="secondary-btn-group">
@@ -101,7 +104,7 @@ export function SchemeCard({
               }}
               title={isCompared ? "Remove from comparison tray" : "Compare with other schemes"}
             >
-              {isCompared ? "In Tray" : "Compare"}
+              {isCompared ? t.inTray : t.compare}
             </button>
 
             <button
@@ -113,7 +116,7 @@ export function SchemeCard({
               }}
               title={isBookmarked ? "Remove from saved list" : "Save scheme"}
             >
-              {isBookmarked ? "Saved" : "Save"}
+              {isBookmarked ? t.saved : t.save}
             </button>
           </div>
         </div>

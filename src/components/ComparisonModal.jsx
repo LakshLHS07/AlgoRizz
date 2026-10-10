@@ -1,48 +1,55 @@
 import React from 'react';
+import { getTranslation } from '../utils/translations';
+import { getLocalizedScheme } from '../utils/schemeLocalization';
 
 export function ComparisonModal({
-  comparedSchemes,
+  comparedSchemes: rawComparedSchemes,
   onClose,
   onRemoveScheme,
   onClearAll,
-  onSelectScheme
+  onSelectScheme,
+  selectedLanguage = 'en'
 }) {
-  if (!comparedSchemes || comparedSchemes.length === 0) return null;
+  const t = getTranslation(selectedLanguage);
+  
+  if (!rawComparedSchemes || rawComparedSchemes.length === 0) return null;
+
+  const comparedSchemes = rawComparedSchemes.map(s => getLocalizedScheme(s, selectedLanguage));
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-dialog-extra-large" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-dialog-extra-large comparison-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <div>
-            <span className="modal-category-tag">Scheme Comparison</span>
-            <h2 className="modal-scheme-title">Side-by-Side Comparison ({comparedSchemes.length}/3)</h2>
+            <span className="modal-category-tag">{t.comparisonTray}</span>
+            <h2 className="modal-scheme-title">{t.comparisonTray} ({comparedSchemes.length}/3)</h2>
           </div>
-          <div className="comparison-header-actions">
-            <button type="button" className="clear-comparison-btn" onClick={onClearAll}>
-              Clear All
+          <div className="comparison-header-actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <button type="button" className="clear-comparison-btn" onClick={onClearAll} style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', fontSize: '0.75rem', padding: '0.35rem 0.75rem', cursor: 'pointer', borderRadius: 2 }}>
+              {t.resetAll}
             </button>
             <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close modal">
-              Close
+              {t.close}
             </button>
           </div>
         </div>
 
-        <div className="comparison-matrix-wrapper">
-          <table className="comparison-table">
+        <div className="comparison-matrix-wrapper" style={{ padding: '1rem', overflowX: 'auto' }}>
+          <table className="criteria-table comparison-table">
             <thead>
               <tr>
-                <th className="feature-col">Feature</th>
+                <th style={{ width: '180px' }}>Feature</th>
                 {comparedSchemes.map(s => (
-                  <th key={s.id} className="scheme-col">
-                    <div className="scheme-col-header">
+                  <th key={s.id}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
                       <strong>{s.name}</strong>
                       <button
                         type="button"
-                        className="remove-col-btn"
                         onClick={() => onRemoveScheme(s.id)}
                         title="Remove scheme"
+                        style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '2px 6px', fontSize: '0.7rem', borderRadius: 2, cursor: 'pointer' }}
                       >
-                        Remove
+                        ✕
                       </button>
                     </div>
                   </th>
@@ -51,45 +58,44 @@ export function ComparisonModal({
             </thead>
             <tbody>
               <tr>
-                <td className="feature-col"><strong>Match Score</strong></td>
+                <td><strong>Match Score</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>
-                    <span className="comp-score-badge" style={{ color: s.tierColor }}>
-                      {s.matchScore}% ({s.matchTier})
-                    </span>
+                    <strong style={{ color: s.tierColor || '#15803d' }}>
+                      {s.matchScore}% ({s.matchTier || t.eligibleStamp})
+                    </strong>
                   </td>
                 ))}
               </tr>
 
               <tr>
-                <td className="feature-col"><strong>Category & Ministry</strong></td>
+                <td><strong>{t.schemeCategory}</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>
-                    <span className="comp-category">{s.category}</span>
-                    <div className="comp-ministry">{s.ministry}</div>
+                    <div><strong>{s.category}</strong></div>
+                    <div style={{ fontSize: '0.72rem', color: '#64748b' }}>{s.ministry}</div>
                   </td>
                 ))}
               </tr>
 
               <tr>
-                <td className="feature-col"><strong>Financial Benefit</strong></td>
+                <td><strong>{t.financialBenefit}</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>
-                    <strong className="comp-benefit">{s.benefitAmount}</strong>
-                    <div className="comp-benefit-type">{s.benefitType}</div>
+                    <strong style={{ color: '#15803d' }}>{s.benefitAmount}</strong>
                   </td>
                 ))}
               </tr>
 
               <tr>
-                <td className="feature-col"><strong>Target Group</strong></td>
+                <td><strong>{t.targetBeneficiary}</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>{s.targetGroup}</td>
                 ))}
               </tr>
 
               <tr>
-                <td className="feature-col"><strong>Max Income Limit</strong></td>
+                <td><strong>{t.annualIncome} Limit</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>
                     ₹{(s.eligibility.maxIncome / 100000).toFixed(1)} Lakhs / year
@@ -98,7 +104,7 @@ export function ComparisonModal({
               </tr>
 
               <tr>
-                <td className="feature-col"><strong>Target Occupations</strong></td>
+                <td><strong>{t.occupation}</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>
                     {s.eligibility.occupations.join(", ")}
@@ -107,31 +113,18 @@ export function ComparisonModal({
               </tr>
 
               <tr>
-                <td className="feature-col"><strong>Required Documents</strong></td>
-                {comparedSchemes.map(s => (
-                  <td key={s.id}>
-                    <ul className="comp-docs-list">
-                      {s.documents.map((d, i) => (
-                        <li key={i}>{d.name} {d.required && '(Mandatory)'}</li>
-                      ))}
-                    </ul>
-                  </td>
-                ))}
-              </tr>
-
-              <tr>
-                <td className="feature-col"><strong>Action</strong></td>
+                <td><strong>Action</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>
                     <button
                       type="button"
-                      className="comp-view-details-btn"
+                      className="classic-btn-primary"
                       onClick={() => {
                         onClose();
                         onSelectScheme(s);
                       }}
                     >
-                      View Full Details
+                      {t.viewGuidelines}
                     </button>
                   </td>
                 ))}

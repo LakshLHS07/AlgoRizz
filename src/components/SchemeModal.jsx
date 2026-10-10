@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
+import { getTranslation } from '../utils/translations';
+import { getLocalizedScheme } from '../utils/schemeLocalization';
 
 export function SchemeModal({
-  scheme,
+  scheme: rawScheme,
   userProfile,
   onClose,
   isBookmarked,
-  onToggleBookmark
+  onToggleBookmark,
+  selectedLanguage = 'en'
 }) {
   const [activeTab, setActiveTab] = useState('eligibility');
   const [checkedDocs, setCheckedDocs] = useState({});
+  const t = getTranslation(selectedLanguage);
+  const scheme = getLocalizedScheme(rawScheme, selectedLanguage);
 
   if (!scheme) return null;
 
@@ -80,23 +85,23 @@ export function SchemeModal({
           </div>
 
           <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close modal">
-            Close
+            {t.close}
           </button>
         </div>
 
         {/* Highlight Banner */}
         <div className="modal-benefit-banner">
           <div className="benefit-banner-item">
-            <span className="banner-label">Financial Benefit / Assistance</span>
+            <span className="banner-label">{t.financialBenefit}</span>
             <strong className="banner-value">{scheme.benefitAmount}</strong>
           </div>
           <div className="benefit-banner-item">
-            <span className="banner-label">Target Group</span>
+            <span className="banner-label">{t.targetBeneficiary}</span>
             <strong className="banner-value">{scheme.targetGroup}</strong>
           </div>
           <div className="benefit-banner-item">
-            <span className="banner-label">Application Status</span>
-            <span className="banner-badge open">{scheme.deadline}</span>
+            <span className="banner-label">{t.applicationMode}</span>
+            <span className="banner-badge open">{scheme.applicationMode || scheme.deadline}</span>
           </div>
         </div>
 
@@ -107,7 +112,7 @@ export function SchemeModal({
             className={`tab-nav-btn ${activeTab === 'eligibility' ? 'active' : ''}`}
             onClick={() => setActiveTab('eligibility')}
           >
-            Eligibility ({passedCount}/{totalCount})
+            Eligibility Overview ({passedCount}/{totalCount})
           </button>
           <button
             type="button"
@@ -121,7 +126,7 @@ export function SchemeModal({
             className={`tab-nav-btn ${activeTab === 'apply' ? 'active' : ''}`}
             onClick={() => setActiveTab('apply')}
           >
-            How to Apply
+            How to Apply & Guidelines
           </button>
         </div>
 
@@ -134,7 +139,7 @@ export function SchemeModal({
                   <span>{scheme.matchScore}%</span>
                 </div>
                 <div>
-                  <h4>Eligibility Overview</h4>
+                  <h4>Eligibility Assessment</h4>
                   <p>
                     {passedCount === totalCount
                       ? "Your profile meets all standard eligibility criteria for this scheme."
@@ -156,15 +161,12 @@ export function SchemeModal({
                   <tbody>
                     {criteriaChecks.map((crit, idx) => (
                       <tr key={idx} className={crit.passed ? 'row-passed' : 'row-failed'}>
-                        <td>
-                          <strong>{crit.title}</strong>
-                          <div className="sub-note">{crit.note}</div>
-                        </td>
+                        <td><strong>{crit.title}</strong></td>
                         <td>{crit.requirement}</td>
                         <td>{crit.userVal}</td>
                         <td>
-                          <span className={`status-badge ${crit.passed ? 'passed' : 'failed'}`}>
-                            {crit.passed ? 'Eligible' : 'Not Met'}
+                          <span className={`status-badge-chip ${crit.passed ? 'pass' : 'fail'}`}>
+                            {crit.passed ? '✓ Eligible' : '✗ Ineligible'}
                           </span>
                         </td>
                       </tr>
@@ -172,101 +174,81 @@ export function SchemeModal({
                   </tbody>
                 </table>
               </div>
-
-              {scheme.eligibility.specialConditions && (
-                <div className="special-conditions-callout">
-                  <strong>Special Conditions:</strong>
-                  <p>{scheme.eligibility.specialConditions}</p>
-                </div>
-              )}
             </div>
           )}
 
           {activeTab === 'documents' && (
             <div className="documents-tab-pane">
-              <div className="docs-intro-row">
-                <p>Gather the following documents before applying:</p>
-                <button type="button" className="print-docs-btn" onClick={handlePrintChecklist}>
+              <div className="docs-header-row">
+                <p className="docs-desc">Check the documents you already possess to generate your application checklist:</p>
+                <button type="button" className="print-checklist-btn" onClick={handlePrintChecklist}>
                   Print Checklist
                 </button>
               </div>
 
-              <div className="documents-list">
-                {scheme.documents.map((doc, idx) => {
-                  const isChecked = !!checkedDocs[doc.name];
-                  return (
-                    <div 
-                      key={idx} 
-                      className={`document-card-item ${isChecked ? 'checked' : ''}`}
-                      onClick={() => toggleDoc(doc.name)}
-                    >
+              <div className="docs-checklist-group">
+                {scheme.documents.map((doc, idx) => (
+                  <div key={idx} className={`doc-check-item ${checkedDocs[doc.name] ? 'checked' : ''}`}>
+                    <label className="doc-check-label">
                       <input
                         type="checkbox"
-                        checked={isChecked}
+                        checked={!!checkedDocs[doc.name]}
                         onChange={() => toggleDoc(doc.name)}
-                        className="doc-checkbox"
-                        id={`doc-${idx}`}
                       />
-                      <div className="doc-info">
-                        <label htmlFor={`doc-${idx}`} className="doc-name">
-                          {doc.name} {doc.required && <span className="req-star">(Mandatory)</span>}
-                        </label>
-                        <p className="doc-desc">{doc.desc}</p>
+                      <div className="doc-info-text">
+                        <span className="doc-title">{doc.name} {doc.required && <span className="doc-required-tag">*Mandatory</span>}</span>
+                        <span className="doc-sub">{doc.desc}</span>
                       </div>
-                      <span className="doc-status-indicator">
-                        {isChecked ? "Ready" : "Needed"}
-                      </span>
-                    </div>
-                  );
-                })}
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
           {activeTab === 'apply' && (
             <div className="apply-tab-pane">
-              <h4 className="steps-title">Application Steps</h4>
-              <div className="steps-timeline">
-                {scheme.applicationSteps.map((step, idx) => (
-                  <div key={idx} className="step-timeline-item">
-                    <div className="step-number-node">{idx + 1}</div>
-                    <div className="step-content">
-                      <p>{step}</p>
-                    </div>
-                  </div>
-                ))}
+              <div className="roadmap-box">
+                <h4>Application Steps</h4>
+                <ol className="roadmap-steps-list">
+                  {scheme.applicationSteps.map((step, idx) => (
+                    <li key={idx} className="roadmap-step">
+                      <span className="step-number">{idx + 1}</span>
+                      <p className="step-text">{step}</p>
+                    </li>
+                  ))}
+                </ol>
               </div>
 
-              <div className="official-portal-box">
-                <div>
-                  <strong>Official Portal</strong>
-                  <p>Visit the official government website to submit your application directly.</p>
-                </div>
-                <a
-                  href={scheme.officialUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="external-portal-link"
-                >
-                  Visit Portal
+              <div className="official-link-box">
+                <span>Official Scheme Portal: </span>
+                <a href={scheme.officialUrl} target="_blank" rel="noopener noreferrer" className="official-portal-link">
+                  {scheme.officialUrl} ↗
                 </a>
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer */}
+        {/* Modal Footer */}
         <div className="modal-footer">
           <button
             type="button"
-            className={`save-modal-btn ${isBookmarked ? 'active' : ''}`}
+            className={`secondary-action-button ${isBookmarked ? 'active' : ''}`}
             onClick={() => onToggleBookmark(scheme.id)}
           >
-            {isBookmarked ? "Saved in Bookmarks" : "Save Scheme"}
+            {isBookmarked ? t.saved : t.save}
           </button>
-          <button type="button" className="close-btn-secondary" onClick={onClose}>
-            Close
-          </button>
+          
+          <a
+            href={scheme.officialUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="primary-action-button"
+            style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+          >
+            {t.applyNow}
+          </a>
         </div>
       </div>
     </div>

@@ -10,10 +10,13 @@ import { BackendConfigModal } from './components/BackendConfigModal';
 import { FullScreenAuthPage } from './components/FullScreenAuthPage';
 import { OfficialDashboard } from './components/OfficialDashboard';
 import { ReceiptModal } from './components/ReceiptModal';
+import { LanguageModal } from './components/LanguageModal';
 import { Footer } from './components/Footer';
 import { SCHEMES_DATABASE } from './data/schemesData';
 import { matchSchemes, extractEntitiesFromPrompt } from './utils/nlpMatcher';
 import { DEFAULT_BACKEND_URL, pingBackend } from './utils/apiBridge';
+import { INDIAN_LANGUAGES, getTranslation } from './utils/translations';
+import { getLocalizedScheme } from './utils/schemeLocalization';
 
 const INITIAL_PROFILE = {
   age: 28,
@@ -37,6 +40,16 @@ export default function App() {
   // Accessibility State (Font scale & Contrast)
   const [fontSizeMultiplier, setFontSizeMultiplier] = useState(1.0);
   const [isHighContrast, setIsHighContrast] = useState(false);
+
+  // Language State (22 Indian Scheduled Languages + English)
+  const [selectedLanguage, setSelectedLanguage] = useState(() => {
+    try {
+      return localStorage.getItem('algorizz_language') || 'en';
+    } catch {
+      return 'en';
+    }
+  });
+  const [isLanguageModalOpen, setIsLanguageModalOpen] = useState(false);
 
   // Auth & Portal State
   const [currentUser, setCurrentUser] = useState(() => {
@@ -82,7 +95,10 @@ export default function App() {
   // Backend connection state
   const [backendUrl, setBackendUrl] = useState(DEFAULT_BACKEND_URL);
   const [backendStatus, setBackendStatus] = useState({ connected: false, url: DEFAULT_BACKEND_URL });
-  const [selectedLanguage, setSelectedLanguage] = useState("en");
+
+  // Translation helper
+  const t = getTranslation(selectedLanguage);
+  const currentLangObj = INDIAN_LANGUAGES.find(l => l.code === selectedLanguage) || INDIAN_LANGUAGES[0];
 
   // Check backend status on initial load
   useEffect(() => {
@@ -90,6 +106,15 @@ export default function App() {
       setBackendStatus({ connected, url: backendUrl });
     });
   }, [backendUrl]);
+
+  // Persist language
+  useEffect(() => {
+    try {
+      localStorage.setItem('algorizz_language', selectedLanguage);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [selectedLanguage]);
 
   // Persist bookmarks
   useEffect(() => {
@@ -128,10 +153,11 @@ export default function App() {
     return extractEntitiesFromPrompt(prompt);
   }, [prompt]);
 
-  // Scored Schemes
+  // Scored & Localized Schemes
   const matchedSchemes = useMemo(() => {
-    return matchSchemes(profile, prompt, categoryFilter);
-  }, [profile, prompt, categoryFilter]);
+    const rawMatches = matchSchemes(profile, prompt, categoryFilter);
+    return rawMatches.map(s => getLocalizedScheme(s, selectedLanguage));
+  }, [profile, prompt, categoryFilter, selectedLanguage]);
 
   // Filtered by Bookmarks if toggle is on
   const displayedSchemes = useMemo(() => {
@@ -154,10 +180,11 @@ export default function App() {
     return SCHEMES_DATABASE
       .filter(s => comparedIds.includes(s.id))
       .map(s => {
+        const localizedBase = getLocalizedScheme(s, selectedLanguage);
         const found = matchedSchemes.find(m => m.id === s.id);
-        return found || { ...s, matchScore: 70, matchTier: "Moderate Match", tierColor: "#f59e0b" };
+        return found || { ...localizedBase, matchScore: 70, matchTier: "Moderate Match", tierColor: "#f59e0b" };
       });
-  }, [comparedIds, matchedSchemes]);
+  }, [comparedIds, matchedSchemes, selectedLanguage]);
 
   const handleSearch = () => {
     setIsSearching(true);
@@ -256,18 +283,27 @@ export default function App() {
   // If Full-Screen Login Page is active, display it
   if (showAuthScreen || !currentUser) {
     return (
-      <div className={`app-root ${isHighContrast ? 'high-contrast-theme' : ''}`}>
+      <div className={`app-root ${isHighContrast ? 'high-contrast-theme' : ''}`} dir={currentLangObj.dir || 'ltr'}>
         <FullScreenAuthPage
           onLogin={handleLogin}
           onGuestAccess={handleGuestAccess}
           initialRole={currentUser ? currentUser.role : 'citizen'}
+          selectedLanguage={selectedLanguage}
+          onChangeLanguage={setSelectedLanguage}
+          onOpenLanguageModal={() => setIsLanguageModalOpen(true)}
+        />
+        <LanguageModal
+          isOpen={isLanguageModalOpen}
+          onClose={() => setIsLanguageModalOpen(false)}
+          selectedLanguage={selectedLanguage}
+          onSelectLanguage={setSelectedLanguage}
         />
       </div>
     );
   }
 
   return (
-    <div className={`app-layout ${isHighContrast ? 'high-contrast-theme' : ''}`}>
+    <div className={`app-layout ${isHighContrast ? 'high-contrast-theme' : ''}`} dir={currentLangObj.dir || 'ltr'}>
       {/* Top Classic Government Header */}
       <Header
         backendStatus={backendStatus}
@@ -278,6 +314,7 @@ export default function App() {
         onOpenComparison={() => setIsComparisonModalOpen(true)}
         selectedLanguage={selectedLanguage}
         onChangeLanguage={setSelectedLanguage}
+        onOpenLanguageModal={() => setIsLanguageModalOpen(true)}
         showingBookmarksOnly={showingBookmarksOnly}
         currentUser={currentUser}
         onOpenAuthModal={handleOpenAuthScreen}
@@ -291,12 +328,12 @@ export default function App() {
       {/* Breadcrumb Navigation Bar */}
       <div className="classic-breadcrumb-bar">
         <div className="breadcrumb-container">
-          <span className="crumb-item">Home</span>
+          <span className="crumb-item">{t.home}</span>
           <span className="crumb-sep">/</span>
           <span className="crumb-item">Citizen Services</span>
           <span className="crumb-sep">/</span>
           <span className="crumb-item active">
-            {currentUser.role === 'official' ? 'CSC Official Assisted Intake Terminal' : 'Welfare Schemes Semantic Discovery'}
+            {currentUser.role === 'official' ? t.officialDesk : t.resultsHeading}
           </span>
         </div>
       </div>
@@ -309,6 +346,7 @@ export default function App() {
             onPerformIntakeMatch={handlePerformIntakeMatch}
             intakeRecords={intakeRecords}
             onViewRecordReceipt={(rec) => setActiveReceiptRecord(rec)}
+            selectedLanguage={selectedLanguage}
           />
         ) : (
           /* If Citizen Role: Render Citizen Natural Language Search & Discovery */
@@ -316,7 +354,7 @@ export default function App() {
             {/* Citizen Verified Status Strip */}
             <div className="citizen-status-ribbon">
               <div className="citizen-info-badges">
-                <span className="citizen-label-strong">Active Applicant:</span>
+                <span className="citizen-label-strong">{t.activeApplicant}:</span>
                 <span className="citizen-name-badge">{currentUser.name}</span>
                 {currentUser.isAadhaarVerified ? (
                   <span className="kyc-badge verified">✓ Aadhaar Verified ({currentUser.aadhaar})</span>
@@ -345,12 +383,14 @@ export default function App() {
               onSearch={handleSearch}
               isSearching={isSearching}
               extractedEntities={extractedEntities}
+              selectedLanguage={selectedLanguage}
             />
 
             <StatsSection
               totalSchemes={SCHEMES_DATABASE.length}
               topMatchesCount={topMatchesCount}
               highEligibilityCount={highEligibilityCount}
+              selectedLanguage={selectedLanguage}
             />
           </>
         )}
@@ -363,15 +403,16 @@ export default function App() {
             categoryFilter={categoryFilter}
             setCategoryFilter={setCategoryFilter}
             onReset={handleResetFilters}
+            selectedLanguage={selectedLanguage}
           />
 
           <section className="results-section">
             <div className="results-header-bar">
               <div className="results-count-tag">
                 {showingBookmarksOnly ? (
-                  <span>Saved Schemes Checklist ({displayedSchemes.length})</span>
+                  <span>{t.savedChecklist} ({displayedSchemes.length})</span>
                 ) : (
-                  <span>Eligible & Assessed Welfare Schemes ({displayedSchemes.length})</span>
+                  <span>{t.resultsHeading} ({displayedSchemes.length})</span>
                 )}
               </div>
 
@@ -381,21 +422,17 @@ export default function App() {
                   className="classic-btn-reset"
                   onClick={() => setShowingBookmarksOnly(false)}
                 >
-                  ← Back to All Schemes
+                  {t.backToAll}
                 </button>
               )}
             </div>
 
             {displayedSchemes.length === 0 ? (
               <div className="empty-results-box">
-                <h4 className="empty-title">No Matching Schemes Found</h4>
-                <p className="empty-desc">
-                  {showingBookmarksOnly
-                    ? "You have not saved any schemes yet. Click 'Save' on any scheme card to add it to your checklist."
-                    : "Try broadening your category filter or adjusting your annual income and age criteria in the left filter panel."}
-                </p>
+                <h4 className="empty-title">{t.noSchemes}</h4>
+                <p className="empty-desc">{t.noSchemesSub}</p>
                 <button type="button" className="classic-btn-primary" onClick={handleResetFilters} style={{ maxWidth: 220, margin: '1rem auto 0' }}>
-                  Reset Filters & Show All
+                  {t.resetAll}
                 </button>
               </div>
             ) : (
@@ -409,6 +446,7 @@ export default function App() {
                     onToggleBookmark={handleToggleBookmark}
                     isCompared={comparedIds.includes(scheme.id)}
                     onToggleCompare={handleToggleCompare}
+                    selectedLanguage={selectedLanguage}
                   />
                 ))}
               </div>
@@ -418,7 +456,15 @@ export default function App() {
       </main>
 
       {/* Classic Government Footer */}
-      <Footer />
+      <Footer selectedLanguage={selectedLanguage} />
+
+      {/* Language Selection Modal (All 22 Indian Regional Languages + English) */}
+      <LanguageModal
+        isOpen={isLanguageModalOpen}
+        onClose={() => setIsLanguageModalOpen(false)}
+        selectedLanguage={selectedLanguage}
+        onSelectLanguage={setSelectedLanguage}
+      />
 
       {/* Scheme Detail & Eligibility Modal */}
       {selectedScheme && (
@@ -428,6 +474,7 @@ export default function App() {
           onClose={() => setSelectedScheme(null)}
           isBookmarked={bookmarkedIds.includes(selectedScheme.id)}
           onToggleBookmark={handleToggleBookmark}
+          selectedLanguage={selectedLanguage}
         />
       )}
 
@@ -439,6 +486,7 @@ export default function App() {
           onRemoveScheme={(id) => setComparedIds(prev => prev.filter(x => x !== id))}
           onClearAll={() => setComparedIds([])}
           onSelectScheme={setSelectedScheme}
+          selectedLanguage={selectedLanguage}
         />
       )}
 
@@ -458,6 +506,7 @@ export default function App() {
           record={activeReceiptRecord}
           matchedSchemes={matchedSchemes}
           onClose={() => setActiveReceiptRecord(null)}
+          selectedLanguage={selectedLanguage}
         />
       )}
     </div>

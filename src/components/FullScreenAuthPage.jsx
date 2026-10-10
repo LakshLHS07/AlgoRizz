@@ -9,7 +9,18 @@ import {
   MAJOR_BANKS 
 } from '../utils/kycVerification';
 
-export function FullScreenAuthPage({ onLogin, onGuestAccess, initialRole = 'citizen' }) {
+import { INDIAN_LANGUAGES, getTranslation } from '../utils/translations';
+
+export function FullScreenAuthPage({ 
+  onLogin, 
+  onGuestAccess, 
+  initialRole = 'citizen',
+  selectedLanguage = 'en',
+  onChangeLanguage,
+  onOpenLanguageModal
+}) {
+  const t = getTranslation(selectedLanguage);
+  const currentLangObj = INDIAN_LANGUAGES.find(l => l.code === selectedLanguage) || INDIAN_LANGUAGES[0];
   const [selectedRole, setSelectedRole] = useState(initialRole);
   const [citizenVerificationMode, setCitizenVerificationMode] = useState('kyc'); // 'kyc' | 'mobile'
 
@@ -240,13 +251,27 @@ export function FullScreenAuthPage({ onLogin, onGuestAccess, initialRole = 'citi
             </div>
           </div>
 
-          <button 
-            type="button" 
-            className="guest-skip-btn classic-outline-btn"
-            onClick={onGuestAccess}
-          >
-            Explore Welfare Directory as Guest →
-          </button>
+          <div className="auth-header-right-actions">
+            {/* Language Selection Modal Trigger */}
+            <button
+              type="button"
+              className="ribbon-lang-modal-btn"
+              onClick={onOpenLanguageModal}
+              title="Select Language (22 Indian Languages)"
+            >
+              <span className="lang-icon">🌐</span>
+              <span className="lang-active-label">{currentLangObj.nativeName}</span>
+              <span className="lang-chevron">▼</span>
+            </button>
+
+            <button 
+              type="button" 
+              className="guest-skip-btn classic-outline-btn"
+              onClick={onGuestAccess}
+            >
+              Explore Welfare Directory as Guest →
+            </button>
+          </div>
         </div>
       </header>
 
