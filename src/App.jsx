@@ -10,6 +10,7 @@ import { BackendConfigModal } from './components/BackendConfigModal';
 import { FullScreenAuthPage } from './components/FullScreenAuthPage';
 import { OfficialDashboard } from './components/OfficialDashboard';
 import { ReceiptModal } from './components/ReceiptModal';
+import { Footer } from './components/Footer';
 import { SCHEMES_DATABASE } from './data/schemesData';
 import { matchSchemes, extractEntitiesFromPrompt } from './utils/nlpMatcher';
 import { DEFAULT_BACKEND_URL, pingBackend } from './utils/apiBridge';
@@ -32,6 +33,10 @@ export default function App() {
   const [profile, setProfile] = useState(INITIAL_PROFILE);
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
   const [isSearching, setIsSearching] = useState(false);
+
+  // Accessibility State (Font scale & Contrast)
+  const [fontSizeMultiplier, setFontSizeMultiplier] = useState(1.0);
+  const [isHighContrast, setIsHighContrast] = useState(false);
 
   // Auth & Portal State
   const [currentUser, setCurrentUser] = useState(() => {
@@ -112,6 +117,11 @@ export default function App() {
       console.error(e);
     }
   }, [intakeRecords]);
+
+  // Apply font scale dynamically to document root
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${fontSizeMultiplier * 100}%`;
+  }, [fontSizeMultiplier]);
 
   // Live NLP entity extraction from prompt
   const extractedEntities = useMemo(() => {
@@ -246,17 +256,19 @@ export default function App() {
   // If Full-Screen Login Page is active, display it
   if (showAuthScreen || !currentUser) {
     return (
-      <FullScreenAuthPage
-        onLogin={handleLogin}
-        onGuestAccess={handleGuestAccess}
-        initialRole={currentUser ? currentUser.role : 'citizen'}
-      />
+      <div className={`app-root ${isHighContrast ? 'high-contrast-theme' : ''}`}>
+        <FullScreenAuthPage
+          onLogin={handleLogin}
+          onGuestAccess={handleGuestAccess}
+          initialRole={currentUser ? currentUser.role : 'citizen'}
+        />
+      </div>
     );
   }
 
   return (
-    <div className="app-layout">
-      {/* Top Header */}
+    <div className={`app-layout ${isHighContrast ? 'high-contrast-theme' : ''}`}>
+      {/* Top Classic Government Header */}
       <Header
         backendStatus={backendStatus}
         onOpenBackendModal={() => setIsBackendModalOpen(true)}
@@ -270,7 +282,24 @@ export default function App() {
         currentUser={currentUser}
         onOpenAuthModal={handleOpenAuthScreen}
         onLogout={handleLogout}
+        fontSizeMultiplier={fontSizeMultiplier}
+        setFontSizeMultiplier={setFontSizeMultiplier}
+        isHighContrast={isHighContrast}
+        setIsHighContrast={setIsHighContrast}
       />
+
+      {/* Breadcrumb Navigation Bar */}
+      <div className="classic-breadcrumb-bar">
+        <div className="breadcrumb-container">
+          <span className="crumb-item">Home</span>
+          <span className="crumb-sep">/</span>
+          <span className="crumb-item">Citizen Services</span>
+          <span className="crumb-sep">/</span>
+          <span className="crumb-item active">
+            {currentUser.role === 'official' ? 'CSC Official Assisted Intake Terminal' : 'Welfare Schemes Semantic Discovery'}
+          </span>
+        </div>
+      </div>
 
       <main className="main-content">
         {/* If Official Role: Render Official Intake Dashboard */}
@@ -284,26 +313,29 @@ export default function App() {
         ) : (
           /* If Citizen Role: Render Citizen Natural Language Search & Discovery */
           <>
-            <div className="portal-indicator-banner">
-              <div className="citizen-status-tags">
-                <strong>Citizen Self-Service Portal</strong>
-                {currentUser.isAadhaarVerified && (
-                  <span className="verified-pill">Aadhaar Verified</span>
+            {/* Citizen Verified Status Strip */}
+            <div className="citizen-status-ribbon">
+              <div className="citizen-info-badges">
+                <span className="citizen-label-strong">Active Applicant:</span>
+                <span className="citizen-name-badge">{currentUser.name}</span>
+                {currentUser.isAadhaarVerified ? (
+                  <span className="kyc-badge verified">✓ Aadhaar Verified ({currentUser.aadhaar})</span>
+                ) : (
+                  <span className="kyc-badge unverified">⚠ Aadhaar Unverified</span>
                 )}
                 {currentUser.isPanVerified && (
-                  <span className="verified-pill">PAN Verified</span>
+                  <span className="kyc-badge verified">✓ PAN Tax Assessed</span>
                 )}
                 {currentUser.isBankVerified && (
-                  <span className="verified-pill">Bank & DBT Verified</span>
+                  <span className="kyc-badge verified">✓ Bank & DBT Verified</span>
                 )}
-                <span> • Name: {currentUser.name}</span>
               </div>
               <button
                 type="button"
-                className="switch-to-official-btn"
+                className="switch-desk-link"
                 onClick={handleOpenAuthScreen}
               >
-                Switch to Official / CSC Mode
+                Switch to Official / CSC Counter →
               </button>
             </div>
 
@@ -323,7 +355,7 @@ export default function App() {
           </>
         )}
 
-        {/* Results Grid */}
+        {/* Results Grid Layout */}
         <div className="app-main-grid">
           <ProfileDrawer
             profile={profile}
@@ -337,33 +369,33 @@ export default function App() {
             <div className="results-header-bar">
               <div className="results-count-tag">
                 {showingBookmarksOnly ? (
-                  <span>Saved Schemes ({displayedSchemes.length})</span>
+                  <span>Saved Schemes Checklist ({displayedSchemes.length})</span>
                 ) : (
-                  <span>Assessed Matching Schemes ({displayedSchemes.length})</span>
+                  <span>Eligible & Assessed Welfare Schemes ({displayedSchemes.length})</span>
                 )}
               </div>
 
               {showingBookmarksOnly && (
                 <button
                   type="button"
-                  className="action-btn"
+                  className="classic-btn-reset"
                   onClick={() => setShowingBookmarksOnly(false)}
                 >
-                  Back to All Schemes
+                  ← Back to All Schemes
                 </button>
               )}
             </div>
 
             {displayedSchemes.length === 0 ? (
               <div className="empty-results-box">
-                <h4 className="empty-title">No Schemes Found</h4>
+                <h4 className="empty-title">No Matching Schemes Found</h4>
                 <p className="empty-desc">
                   {showingBookmarksOnly
-                    ? "You have not saved any schemes yet. Click 'Save' on any scheme card to add it here."
-                    : "Try broadening your category filter or adjusting your income and age in the sidebar."}
+                    ? "You have not saved any schemes yet. Click 'Save' on any scheme card to add it to your checklist."
+                    : "Try broadening your category filter or adjusting your annual income and age criteria in the left filter panel."}
                 </p>
-                <button type="button" className="primary-view-btn" onClick={handleResetFilters} style={{ maxWidth: 200, margin: '0 auto' }}>
-                  Reset Filters
+                <button type="button" className="classic-btn-primary" onClick={handleResetFilters} style={{ maxWidth: 220, margin: '1rem auto 0' }}>
+                  Reset Filters & Show All
                 </button>
               </div>
             ) : (
@@ -384,6 +416,9 @@ export default function App() {
           </section>
         </div>
       </main>
+
+      {/* Classic Government Footer */}
+      <Footer />
 
       {/* Scheme Detail & Eligibility Modal */}
       {selectedScheme && (

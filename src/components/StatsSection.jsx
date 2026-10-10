@@ -2,33 +2,25 @@ import React from 'react';
 
 export function StatsSection({ totalSchemes, topMatchesCount, highEligibilityCount }) {
   return (
-    <div className="stats-metric-strip">
-      <div className="metric-card">
-        <div className="metric-info">
-          <span className="metric-num">{totalSchemes}</span>
-          <span className="metric-desc">Available Welfare Schemes</span>
-        </div>
+    <div className="stats-section-classic">
+      <div className="stat-metric-card">
+        <span className="stat-label-text">Welfare Schemes Catalog</span>
+        <div className="stat-number-val">{totalSchemes}</div>
       </div>
 
-      <div className="metric-card">
-        <div className="metric-info">
-          <span className="metric-num">{topMatchesCount}</span>
-          <span className="metric-desc">Matched to Your Profile</span>
-        </div>
+      <div className="stat-metric-card">
+        <span className="stat-label-text">Profile Matched Schemes</span>
+        <div className="stat-number-val">{topMatchesCount}</div>
       </div>
 
-      <div className="metric-card">
-        <div className="metric-info">
-          <span className="metric-num">{highEligibilityCount}</span>
-          <span className="metric-desc">High Probability Matches (80%+)</span>
-        </div>
+      <div className="stat-metric-card highlight">
+        <span className="stat-label-text">High Eligibility (80%+)</span>
+        <div className="stat-number-val" style={{ color: 'var(--gov-green)' }}>{highEligibilityCount}</div>
       </div>
 
-      <div className="metric-card">
-        <div className="metric-info">
-          <span className="metric-num">Free</span>
-          <span className="metric-desc">Direct Citizen Access</span>
-        </div>
+      <div className="stat-metric-card">
+        <span className="stat-label-text">Direct Benefit Transfer</span>
+        <div className="stat-number-val" style={{ color: 'var(--gov-navy)' }}>100% Free</div>
       </div>
     </div>
   );

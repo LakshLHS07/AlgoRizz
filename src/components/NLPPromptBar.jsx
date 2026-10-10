@@ -47,85 +47,103 @@ export function NLPPromptBar({
     (extractedEntities.keywords && extractedEntities.keywords.length > 0);
 
   return (
-    <div className="nlp-prompt-section">
-      <div className="nlp-card">
-        <div className="prompt-header">
-          <h2 className="prompt-heading">Describe Your Situation</h2>
-          <span className="prompt-hint">Type in simple everyday language (income, location, work, needs)</span>
+    <section className="classic-search-section">
+      <div className="search-frame-box">
+        {/* Section Header */}
+        <div className="search-frame-header">
+          <div className="header-title-flex">
+            <span className="search-header-badge">SEARCH & DISCOVERY</span>
+            <h2 className="search-main-title">Natural Language Scheme Discovery & Criteria Search</h2>
+          </div>
+          <p className="search-subtext">
+            Describe your age, occupation, family income, land holding, or required financial assistance in plain everyday words. The semantic parser will automatically compute eligibility matches.
+          </p>
         </div>
 
-        <div className="prompt-input-wrapper">
-          <textarea
-            className="nlp-textarea"
-            rows="3"
-            placeholder="For example: I am a 28-year-old woman farmer from Maharashtra with 2 children, earning 1.4 Lakhs per year, looking for crop loan and girl child support..."
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          <button
-            type="button"
-            className="match-submit-btn"
-            onClick={onSearch}
-            disabled={isSearching}
-          >
-            {isSearching ? "Searching..." : "Find Matching Schemes"}
-          </button>
+        {/* Input & Search Area */}
+        <div className="search-input-container">
+          <div className="textarea-wrapper">
+            <label htmlFor="nlp-search-query" className="sr-only">Welfare Query</label>
+            <textarea
+              id="nlp-search-query"
+              className="classic-search-textarea"
+              rows="3"
+              placeholder="e.g. I am a 28-year-old female farmer in Maharashtra with 2 acres land and family income of 1.4 Lakhs, looking for crop insurance and education financial assistance..."
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+          </div>
+
+          <div className="search-submit-panel">
+            <button
+              type="button"
+              className="classic-search-button"
+              onClick={onSearch}
+              disabled={isSearching}
+            >
+              {isSearching ? "Computing Matches..." : "Search Matching Schemes →"}
+            </button>
+            <span className="search-hotkey-hint">Press Enter to Search</span>
+          </div>
         </div>
 
-        {/* Extracted Entities */}
+        {/* Extracted Entities Data Strip */}
         {hasExtracted && (
-          <div className="extracted-entities-bar">
-            <span className="entities-title">Detected Details:</span>
-            <div className="entities-chips">
+          <div className="extracted-params-panel">
+            <div className="params-panel-header">
+              <span className="params-title">Parsed Criteria from Query:</span>
+            </div>
+            <div className="params-table-grid">
               {extractedEntities.occupation && (
-                <span className="chip">
-                  Occupation: <strong>{extractedEntities.occupation}</strong>
-                </span>
+                <div className="param-item">
+                  <span className="p-label">Occupation:</span>
+                  <strong className="p-value">{extractedEntities.occupation}</strong>
+                </div>
               )}
               {extractedEntities.state && (
-                <span className="chip">
-                  State: <strong>{extractedEntities.state}</strong>
-                </span>
+                <div className="param-item">
+                  <span className="p-label">State:</span>
+                  <strong className="p-value">{extractedEntities.state}</strong>
+                </div>
               )}
               {extractedEntities.age && (
-                <span className="chip">
-                  Age: <strong>{extractedEntities.age} yrs</strong>
-                </span>
+                <div className="param-item">
+                  <span className="p-label">Age:</span>
+                  <strong className="p-value">{extractedEntities.age} Yrs</strong>
+                </div>
               )}
               {extractedEntities.gender && (
-                <span className="chip">
-                  Gender: <strong>{extractedEntities.gender}</strong>
-                </span>
+                <div className="param-item">
+                  <span className="p-label">Gender:</span>
+                  <strong className="p-value">{extractedEntities.gender}</strong>
+                </div>
               )}
               {extractedEntities.income && (
-                <span className="chip">
-                  Income: <strong>₹{(extractedEntities.income / 100000).toFixed(1)}L/yr</strong>
-                </span>
+                <div className="param-item">
+                  <span className="p-label">Annual Income:</span>
+                  <strong className="p-value">₹{(extractedEntities.income / 100000).toFixed(1)} Lakhs</strong>
+                </div>
               )}
               {extractedEntities.category && (
-                <span className="chip">
-                  Category: <strong>{extractedEntities.category}</strong>
-                </span>
+                <div className="param-item">
+                  <span className="p-label">Social Category:</span>
+                  <strong className="p-value">{extractedEntities.category}</strong>
+                </div>
               )}
-              {extractedEntities.keywords && extractedEntities.keywords.map(kw => (
-                <span key={kw} className="chip chip-keyword">
-                  {kw}
-                </span>
-              ))}
             </div>
           </div>
         )}
 
-        {/* Quick Example Scenarios */}
-        <div className="example-prompts-row">
-          <span className="examples-label">Examples:</span>
-          <div className="example-chips">
+        {/* Quick Example Personas */}
+        <div className="quick-personas-strip">
+          <span className="personas-label">Quick Search Examples:</span>
+          <div className="personas-list">
             {EXAMPLE_PROMPTS.map((ex, index) => (
               <button
                 key={index}
                 type="button"
-                className="example-pill-btn"
+                className="persona-link-btn"
                 onClick={() => setPrompt(ex.text)}
               >
                 {ex.label}
@@ -134,6 +152,6 @@ export function NLPPromptBar({
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
