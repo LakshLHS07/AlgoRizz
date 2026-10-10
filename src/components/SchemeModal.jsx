@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { getTranslation } from '../utils/translations';
+import { 
+  getTranslation, 
+  translateOccupation, 
+  translateGender, 
+  translateSocialCategory, 
+  translateDocumentName 
+} from '../utils/translations';
 import { getLocalizedScheme } from '../utils/schemeLocalization';
 
 export function SchemeModal({
@@ -28,45 +34,58 @@ export function SchemeModal({
     window.print();
   };
 
+  const isAgeValid = userProfile.age >= scheme.eligibility.minAge && userProfile.age <= scheme.eligibility.maxAge;
+  const isIncomeValid = userProfile.income <= scheme.eligibility.maxIncome;
+  const isOccValid = scheme.eligibility.occupations.includes("all") || scheme.eligibility.occupations.includes(userProfile.occupation);
+  const isGenderCategoryValid = (scheme.eligibility.genders.includes("all") || scheme.eligibility.genders.includes(userProfile.gender)) &&
+                                (scheme.eligibility.categories.includes(userProfile.category) || scheme.eligibility.categories.includes("General"));
+
   const criteriaChecks = [
     {
-      title: "Age Criterion",
-      requirement: `${scheme.eligibility.minAge} to ${scheme.eligibility.maxAge} Years`,
-      userVal: `${userProfile.age} Years`,
-      passed: userProfile.age >= scheme.eligibility.minAge && userProfile.age <= scheme.eligibility.maxAge,
-      note: userProfile.age < scheme.eligibility.minAge ? "Applicant is below minimum age requirement" : userProfile.age > scheme.eligibility.maxAge ? "Applicant exceeds maximum age limit" : "Age requirement met"
+      title: t.critAge,
+      requirement: `${scheme.eligibility.minAge} ${t.to} ${scheme.eligibility.maxAge} ${t.years}`,
+      userVal: `${userProfile.age} ${t.years}`,
+      passed: isAgeValid,
+      note: userProfile.age < scheme.eligibility.minAge 
+        ? t.ageBelow 
+        : userProfile.age > scheme.eligibility.maxAge 
+        ? t.ageExceeds 
+        : t.ageMet
     },
     {
-      title: "Income Limit",
-      requirement: `Up to ₹${(scheme.eligibility.maxIncome / 100000).toFixed(1)} Lakhs / year`,
-      userVal: `₹${(userProfile.income / 100000).toFixed(2)} Lakhs`,
-      passed: userProfile.income <= scheme.eligibility.maxIncome,
-      note: userProfile.income <= scheme.eligibility.maxIncome ? "Income is within limit" : "Income exceeds maximum threshold"
+      title: t.critIncome,
+      requirement: `${t.upTo} ₹${(scheme.eligibility.maxIncome / 100000).toFixed(1)} ${t.lakhs} / ${t.perYear}`,
+      userVal: `₹${(userProfile.income / 100000).toFixed(2)} ${t.lakhs}`,
+      passed: isIncomeValid,
+      note: isIncomeValid ? t.incomeWithin : t.incomeExceeds
     },
     {
-      title: "Target Occupation",
-      requirement: scheme.eligibility.occupations.join(", "),
-      userVal: userProfile.occupation,
-      passed: scheme.eligibility.occupations.includes("all") || scheme.eligibility.occupations.includes(userProfile.occupation),
-      note: scheme.eligibility.occupations.includes("all") ? "Open to all occupations" : `Designed for ${scheme.eligibility.occupations.join(", ")}`
+      title: t.critOccupation,
+      requirement: scheme.eligibility.occupations.includes("all") 
+        ? t.openToAllOcc 
+        : scheme.eligibility.occupations.map(o => translateOccupation(o, selectedLanguage)).join(", "),
+      userVal: translateOccupation(userProfile.occupation, selectedLanguage) || userProfile.occupation,
+      passed: isOccValid,
+      note: scheme.eligibility.occupations.includes("all") 
+        ? t.openToAllOcc 
+        : `${t.designedFor} ${scheme.eligibility.occupations.map(o => translateOccupation(o, selectedLanguage)).join(", ")}`
     },
     {
-      title: "Gender and Category",
-      requirement: `Gender: ${scheme.eligibility.genders.join("/")} | Category: ${scheme.eligibility.categories.join(", ")}`,
-      userVal: `Gender: ${userProfile.gender} | Category: ${userProfile.category}`,
-      passed: (scheme.eligibility.genders.includes("all") || scheme.eligibility.genders.includes(userProfile.gender)) &&
-              (scheme.eligibility.categories.includes(userProfile.category) || scheme.eligibility.categories.includes("General")),
-      note: "Demographic requirements"
+      title: t.critGenderCategory,
+      requirement: `${t.gender}: ${scheme.eligibility.genders.map(g => translateGender(g, selectedLanguage)).join("/")} | ${t.socialCategory}: ${scheme.eligibility.categories.map(c => translateSocialCategory(c, selectedLanguage)).join(", ")}`,
+      userVal: `${t.gender}: ${translateGender(userProfile.gender, selectedLanguage)} | ${t.socialCategory}: ${translateSocialCategory(userProfile.category, selectedLanguage)}`,
+      passed: isGenderCategoryValid,
+      note: t.demographicReqs
     }
   ];
 
   if (scheme.eligibility.requiresLand) {
     criteriaChecks.push({
-      title: "Land Requirement",
-      requirement: "Cultivable Agricultural Land Ownership",
-      userVal: userProfile.hasLand ? "Owns land" : "No land",
+      title: t.critLand,
+      requirement: t.landReq,
+      userVal: userProfile.hasLand ? t.ownsLand : t.noLand,
       passed: userProfile.hasLand,
-      note: userProfile.hasLand ? "Land ownership confirmed" : "Requires agricultural land records"
+      note: userProfile.hasLand ? t.landConfirmed : t.requiresLandRecords
     });
   }
 
@@ -112,21 +131,21 @@ export function SchemeModal({
             className={`tab-nav-btn ${activeTab === 'eligibility' ? 'active' : ''}`}
             onClick={() => setActiveTab('eligibility')}
           >
-            Eligibility Overview ({passedCount}/{totalCount})
+            {t.tabEligibility} ({passedCount}/{totalCount})
           </button>
           <button
             type="button"
             className={`tab-nav-btn ${activeTab === 'documents' ? 'active' : ''}`}
             onClick={() => setActiveTab('documents')}
           >
-            Required Documents ({scheme.documents.length})
+            {t.tabDocuments} ({scheme.documents.length})
           </button>
           <button
             type="button"
             className={`tab-nav-btn ${activeTab === 'apply' ? 'active' : ''}`}
             onClick={() => setActiveTab('apply')}
           >
-            How to Apply & Guidelines
+            {t.tabApply}
           </button>
         </div>
 
@@ -139,11 +158,11 @@ export function SchemeModal({
                   <span>{scheme.matchScore}%</span>
                 </div>
                 <div>
-                  <h4>Eligibility Assessment</h4>
+                  <h4>{t.eligibilityAssessment}</h4>
                   <p>
                     {passedCount === totalCount
-                      ? "Your profile meets all standard eligibility criteria for this scheme."
-                      : `You satisfy ${passedCount} out of ${totalCount} criteria. See details below.`}
+                      ? t.eligibilityAllMet
+                      : t.eligibilityPartialMet.replace('{passed}', passedCount).replace('{total}', totalCount)}
                   </p>
                 </div>
               </div>
@@ -152,21 +171,24 @@ export function SchemeModal({
                 <table className="criteria-table">
                   <thead>
                     <tr>
-                      <th>Criterion</th>
-                      <th>Official Requirement</th>
-                      <th>Your Profile</th>
-                      <th>Status</th>
+                      <th>{t.thCriterion}</th>
+                      <th>{t.thRequirement}</th>
+                      <th>{t.thYourProfile}</th>
+                      <th>{t.thStatus}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {criteriaChecks.map((crit, idx) => (
                       <tr key={idx} className={crit.passed ? 'row-passed' : 'row-failed'}>
-                        <td><strong>{crit.title}</strong></td>
+                        <td>
+                          <strong>{crit.title}</strong>
+                          <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px' }}>{crit.note}</div>
+                        </td>
                         <td>{crit.requirement}</td>
                         <td>{crit.userVal}</td>
                         <td>
                           <span className={`status-badge-chip ${crit.passed ? 'pass' : 'fail'}`}>
-                            {crit.passed ? '✓ Eligible' : '✗ Ineligible'}
+                            {crit.passed ? t.passEligible : t.failIneligible}
                           </span>
                         </td>
                       </tr>
@@ -180,28 +202,33 @@ export function SchemeModal({
           {activeTab === 'documents' && (
             <div className="documents-tab-pane">
               <div className="docs-header-row">
-                <p className="docs-desc">Check the documents you already possess to generate your application checklist:</p>
+                <p className="docs-desc">{t.docsChecklistDesc}</p>
                 <button type="button" className="print-checklist-btn" onClick={handlePrintChecklist}>
-                  Print Checklist
+                  {t.printChecklist}
                 </button>
               </div>
 
               <div className="docs-checklist-group">
-                {scheme.documents.map((doc, idx) => (
-                  <div key={idx} className={`doc-check-item ${checkedDocs[doc.name] ? 'checked' : ''}`}>
-                    <label className="doc-check-label">
-                      <input
-                        type="checkbox"
-                        checked={!!checkedDocs[doc.name]}
-                        onChange={() => toggleDoc(doc.name)}
-                      />
-                      <div className="doc-info-text">
-                        <span className="doc-title">{doc.name} {doc.required && <span className="doc-required-tag">*Mandatory</span>}</span>
-                        <span className="doc-sub">{doc.desc}</span>
-                      </div>
-                    </label>
-                  </div>
-                ))}
+                {scheme.documents.map((doc, idx) => {
+                  const localizedDocName = translateDocumentName(doc.name, selectedLanguage);
+                  return (
+                    <div key={idx} className={`doc-check-item ${checkedDocs[doc.name] ? 'checked' : ''}`}>
+                      <label className="doc-check-label">
+                        <input
+                          type="checkbox"
+                          checked={!!checkedDocs[doc.name]}
+                          onChange={() => toggleDoc(doc.name)}
+                        />
+                        <div className="doc-info-text">
+                          <span className="doc-title">
+                            {localizedDocName} {doc.required && <span className="doc-required-tag">{t.mandatoryDoc}</span>}
+                          </span>
+                          <span className="doc-sub">{doc.desc}</span>
+                        </div>
+                      </label>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -209,7 +236,7 @@ export function SchemeModal({
           {activeTab === 'apply' && (
             <div className="apply-tab-pane">
               <div className="roadmap-box">
-                <h4>Application Steps</h4>
+                <h4>{t.applicationSteps}</h4>
                 <ol className="roadmap-steps-list">
                   {scheme.applicationSteps.map((step, idx) => (
                     <li key={idx} className="roadmap-step">
@@ -221,7 +248,7 @@ export function SchemeModal({
               </div>
 
               <div className="official-link-box">
-                <span>Official Scheme Portal: </span>
+                <span>{t.officialPortal} </span>
                 <a href={scheme.officialUrl} target="_blank" rel="noopener noreferrer" className="official-portal-link">
                   {scheme.officialUrl} ↗
                 </a>

@@ -1,6 +1,12 @@
 import React from 'react';
 import { INDIAN_STATES, OCCUPATIONS, SCHEME_CATEGORIES } from '../data/schemesData';
-import { getTranslation } from '../utils/translations';
+import { 
+  getTranslation, 
+  translateCategory, 
+  translateOccupation, 
+  translateGender, 
+  translateSocialCategory 
+} from '../utils/translations';
 
 export function ProfileDrawer({
   profile,
@@ -20,14 +26,14 @@ export function ProfileDrawer({
   };
 
   const formatLakhs = (val) => {
-    return `₹${(val / 100000).toFixed(2)} Lakhs/yr`;
+    return `₹${(val / 100000).toFixed(2)} ${t.lakhs}/${t.perYear}`;
   };
 
   return (
     <aside className="profile-filters-panel" aria-label="Scheme Filter Panel">
       <div className="filter-panel-header">
         <div className="filter-header-title">
-          <span className="filter-badge">PARAMETERS</span>
+          <span className="filter-badge">{t.parametersBadge}</span>
           <h3>{t.filterTitle}</h3>
         </div>
         <button type="button" className="classic-btn-reset" onClick={onReset} title="Reset all filters to default">
@@ -48,7 +54,9 @@ export function ProfileDrawer({
             onChange={(e) => setCategoryFilter(e.target.value)}
           >
             {SCHEME_CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
+              <option key={cat} value={cat}>
+                {translateCategory(cat, selectedLanguage)}
+              </option>
             ))}
           </select>
         </div>
@@ -66,7 +74,7 @@ export function ProfileDrawer({
           >
             {OCCUPATIONS.map(occ => (
               <option key={occ} value={occ}>
-                {occ === "All Occupations" ? "All Occupations (Any)" : occ.charAt(0).toUpperCase() + occ.slice(1)}
+                {translateOccupation(occ, selectedLanguage)}
               </option>
             ))}
           </select>
@@ -121,10 +129,10 @@ export function ProfileDrawer({
               value={profile.gender}
               onChange={(e) => handleChange('gender', e.target.value)}
             >
-              <option value="all">Any / All</option>
-              <option value="female">Female</option>
-              <option value="male">Male</option>
-              <option value="other">Other</option>
+              <option value="all">{translateGender("all", selectedLanguage)}</option>
+              <option value="female">{translateGender("female", selectedLanguage)}</option>
+              <option value="male">{translateGender("male", selectedLanguage)}</option>
+              <option value="other">{translateGender("other", selectedLanguage)}</option>
             </select>
           </div>
         </div>
@@ -153,12 +161,12 @@ export function ProfileDrawer({
               value={profile.category}
               onChange={(e) => handleChange('category', e.target.value)}
             >
-              <option value="All">All</option>
-              <option value="General">General</option>
-              <option value="OBC">OBC</option>
-              <option value="SC">SC</option>
-              <option value="ST">ST</option>
-              <option value="EWS">EWS</option>
+              <option value="All">{translateSocialCategory("All", selectedLanguage)}</option>
+              <option value="General">{translateSocialCategory("General", selectedLanguage)}</option>
+              <option value="OBC">{translateSocialCategory("OBC", selectedLanguage)}</option>
+              <option value="SC">{translateSocialCategory("SC", selectedLanguage)}</option>
+              <option value="ST">{translateSocialCategory("ST", selectedLanguage)}</option>
+              <option value="EWS">{translateSocialCategory("EWS", selectedLanguage)}</option>
             </select>
           </div>
         </div>

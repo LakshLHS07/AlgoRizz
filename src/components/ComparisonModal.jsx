@@ -1,5 +1,5 @@
 import React from 'react';
-import { getTranslation } from '../utils/translations';
+import { getTranslation, translateOccupation } from '../utils/translations';
 import { getLocalizedScheme } from '../utils/schemeLocalization';
 
 export function ComparisonModal({
@@ -38,7 +38,7 @@ export function ComparisonModal({
           <table className="criteria-table comparison-table">
             <thead>
               <tr>
-                <th style={{ width: '180px' }}>Feature</th>
+                <th style={{ width: '180px' }}>{t.feature}</th>
                 {comparedSchemes.map(s => (
                   <th key={s.id}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
@@ -58,7 +58,7 @@ export function ComparisonModal({
             </thead>
             <tbody>
               <tr>
-                <td><strong>Match Score</strong></td>
+                <td><strong>{t.matchScore}</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>
                     <strong style={{ color: s.tierColor || '#15803d' }}>
@@ -95,25 +95,27 @@ export function ComparisonModal({
               </tr>
 
               <tr>
-                <td><strong>{t.annualIncome} Limit</strong></td>
+                <td><strong>{t.critIncome}</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>
-                    ₹{(s.eligibility.maxIncome / 100000).toFixed(1)} Lakhs / year
+                    {t.upTo} ₹{(s.eligibility.maxIncome / 100000).toFixed(1)} {t.lakhs} / {t.perYear}
                   </td>
                 ))}
               </tr>
 
               <tr>
-                <td><strong>{t.occupation}</strong></td>
+                <td><strong>{t.critOccupation}</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>
-                    {s.eligibility.occupations.join(", ")}
+                    {s.eligibility.occupations.includes('all')
+                      ? t.openToAllOcc
+                      : s.eligibility.occupations.map(o => translateOccupation(o, selectedLanguage)).join(", ")}
                   </td>
                 ))}
               </tr>
 
               <tr>
-                <td><strong>Action</strong></td>
+                <td><strong>{t.action}</strong></td>
                 {comparedSchemes.map(s => (
                   <td key={s.id}>
                     <button

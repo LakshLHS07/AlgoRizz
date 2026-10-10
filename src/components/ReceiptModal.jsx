@@ -1,5 +1,10 @@
 import React from 'react';
-import { getTranslation } from '../utils/translations';
+import { 
+  getTranslation, 
+  translateOccupation, 
+  translateGender, 
+  translateSocialCategory 
+} from '../utils/translations';
 import { getLocalizedScheme } from '../utils/schemeLocalization';
 
 export function ReceiptModal({
@@ -55,12 +60,12 @@ export function ReceiptModal({
                   <tr><td>Name:</td><td><strong>{record.name}</strong></td></tr>
                   <tr><td>Contact:</td><td>{record.mobile}</td></tr>
                   <tr><td>Aadhaar Ref:</td><td>{record.aadhaar}</td></tr>
-                  <tr><td>Age / Gender:</td><td>{record.age} Years / {record.gender}</td></tr>
-                  <tr><td>Location:</td><td>{record.state}</td></tr>
-                  <tr><td>Category:</td><td>{record.category}</td></tr>
-                  <tr><td>Occupation:</td><td>{record.occupation}</td></tr>
-                  <tr><td>Annual Income:</td><td>₹{(record.income / 100000).toFixed(2)} Lakhs</td></tr>
-                  <tr><td>Landholding:</td><td>{record.hasLand ? "Cultivable Land Verified" : "Landless / Urban"}</td></tr>
+                  <tr><td>{t.ageYears} / {t.gender}:</td><td>{record.age} {t.years} / {translateGender(record.gender, selectedLanguage)}</td></tr>
+                  <tr><td>{t.stateUt}:</td><td>{record.state}</td></tr>
+                  <tr><td>{t.socialCategory}:</td><td>{translateSocialCategory(record.category, selectedLanguage)}</td></tr>
+                  <tr><td>{t.occupation}:</td><td>{translateOccupation(record.occupation, selectedLanguage)}</td></tr>
+                  <tr><td>{t.annualIncome}:</td><td>₹{(record.income / 100000).toFixed(2)} {t.lakhs}</td></tr>
+                  <tr><td>{t.critLand}:</td><td>{record.hasLand ? t.landConfirmed : t.noLand}</td></tr>
                 </tbody>
               </table>
             </div>
@@ -87,10 +92,10 @@ export function ReceiptModal({
             <table className="criteria-table receipt-table">
               <thead>
                 <tr>
-                  <th>Welfare Scheme</th>
-                  <th>Ministry / Department</th>
-                  <th>Benefit / Assistance</th>
-                  <th>Match Score</th>
+                  <th>{t.resultsHeading}</th>
+                  <th>{t.schemeCategory}</th>
+                  <th>{t.financialBenefit}</th>
+                  <th>{t.matchScore}</th>
                 </tr>
               </thead>
               <tbody>
