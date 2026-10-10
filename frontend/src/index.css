@@ -2802,3 +2802,361 @@ body {
   font-style: italic;
 }
 
+/* ===================================================================
+   DUAL WINDOW & WINDOW TABS STYLING
+   =================================================================== */
+
+.stamp-and-status-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+
+.card-eligibility-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.card-eligibility-pill.pill-eligible {
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+.card-eligibility-pill.pill-review {
+  background-color: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fcd34d;
+}
+
+.window-mode-control-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background-color: #ffffff;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-classic);
+}
+
+.window-tabs-group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.window-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.window-tab-btn:hover {
+  background-color: var(--bg-subtle);
+  color: var(--gov-navy);
+  border-color: var(--border-light);
+}
+
+.window-tab-btn.active {
+  background-color: var(--gov-navy);
+  color: #ffffff;
+  border-color: var(--gov-navy);
+  box-shadow: 0 1px 3px rgba(0, 51, 102, 0.2);
+}
+
+.tab-count-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
+.window-tab-btn.active .tab-count-pill {
+  background-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.tab-count-pill.green {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.window-tab-btn.active .tab-count-pill.green {
+  background-color: #15803d;
+  color: #ffffff;
+}
+
+.tab-count-pill.blue {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+
+.window-tab-btn.active .tab-count-pill.blue {
+  background-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.tab-count-pill.amber {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.classic-btn-dual-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-gov);
+  color: var(--gov-navy);
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.classic-btn-dual-toggle:hover {
+  background-color: #e0f2fe;
+}
+
+.classic-btn-dual-toggle.active {
+  background-color: var(--gov-navy-dark);
+  color: #ffffff;
+  border-color: var(--gov-navy-dark);
+}
+
+/* Side-by-Side Dual Window Grid */
+.dual-window-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .dual-window-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.window-panel {
+  background-color: #ffffff;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  box-shadow: var(--shadow-classic);
+  display: flex;
+  flex-direction: column;
+}
+
+.window-eligible-pane {
+  border-top: 4px solid var(--gov-green);
+}
+
+.window-catalog-pane {
+  border-top: 4px solid var(--gov-navy);
+}
+
+.window-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 0.75rem;
+}
+
+.panel-title-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.panel-badge-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.panel-title {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.panel-subtitle {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.panel-count-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  white-space: nowrap;
+}
+
+.panel-count-tag.green {
+  background-color: var(--gov-green-bg);
+  color: var(--gov-green);
+  border: 1px solid #86efac;
+}
+
+.panel-count-tag.blue {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.catalog-search-toolbar {
+  position: relative;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.catalog-search-toolbar.single {
+  max-width: 320px;
+  margin-bottom: 0;
+}
+
+.catalog-search-input {
+  width: 100%;
+  padding: 0.45rem 2rem 0.45rem 0.65rem;
+  font-size: 0.82rem;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-xs);
+  background-color: var(--bg-subtle);
+  color: var(--text-main);
+  outline: none;
+}
+
+.catalog-search-input:focus {
+  border-color: var(--gov-navy);
+  background-color: #ffffff;
+}
+
+.catalog-clear-btn {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.schemes-card-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  overflow-y: auto;
+  max-height: 850px;
+  padding-right: 0.25rem;
+}
+
+.schemes-card-stack::-webkit-scrollbar {
+  width: 6px;
+}
+
+.schemes-card-stack::-webkit-scrollbar-thumb {
+  background-color: var(--border-medium);
+  border-radius: 4px;
+}
+
+.single-window-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.single-window-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: #ffffff;
+  border: 1px solid var(--border-medium);
+  border-left: 4px solid var(--gov-navy);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-classic);
+}
+
+.window-heading {
+  font-family: var(--font-serif);
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.window-subheading {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.empty-results-box.compact {
+  padding: 1.5rem 1rem;
+}
+
+/* High Contrast Adjustments */
+.high-contrast-theme .window-mode-control-bar,
+.high-contrast-theme .window-panel,
+.high-contrast-theme .single-window-banner {
+  background-color: #121212;
+  border-color: #ffffff;
+}
+
+.high-contrast-theme .window-tab-btn.active {
+  background-color: #ffff00;
+  color: #000000;
+  border-color: #ffff00;
+}
+
+.high-contrast-theme .card-eligibility-pill.pill-eligible {
+  background-color: #000000;
+  color: #00ff00;
+  border-color: #00ff00;
+}
+
+.high-contrast-theme .card-eligibility-pill.pill-review {
+  background-color: #000000;
+  color: #ffff00;
+  border-color: #ffff00;
+}
+
+

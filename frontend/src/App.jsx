@@ -153,27 +153,52 @@ export default function App() {
     return extractEntitiesFromPrompt(prompt);
   }, [prompt]);
 
-  // Scored & Localized Schemes
-  const matchedSchemes = useMemo(() => {
+  // Window View Mode: 'eligible' | 'all' | 'bookmarks' & Dual Window toggle
+  const [activeWindowTab, setActiveWindowTab] = useState('eligible');
+  const [isDualWindowView, setIsDualWindowView] = useState(false);
+  const [catalogSearchTerm, setCatalogSearchTerm] = useState('');
+
+  // Scored & Localized Master Schemes
+  const allAssessedSchemes = useMemo(() => {
     const rawMatches = matchSchemes(profile, prompt, categoryFilter);
-    return rawMatches.map(s => getLocalizedScheme(s, selectedLanguage));
+    return rawMatches.map(s => {
+      const isEligible = (s.warningReasons && s.warningReasons.length === 0) || s.matchScore >= 60;
+      return {
+        ...getLocalizedScheme(s, selectedLanguage),
+        isEligible
+      };
+    });
   }, [profile, prompt, categoryFilter, selectedLanguage]);
 
-  // Filtered by Bookmarks if toggle is on
-  const displayedSchemes = useMemo(() => {
-    if (showingBookmarksOnly) {
-      return matchedSchemes.filter(s => bookmarkedIds.includes(s.id));
-    }
-    return matchedSchemes;
-  }, [matchedSchemes, showingBookmarksOnly, bookmarkedIds]);
+  // Strictly Eligible Schemes (Passed demographic and criteria checks)
+  const eligibleSchemes = useMemo(() => {
+    return allAssessedSchemes.filter(s => s.isEligible);
+  }, [allAssessedSchemes]);
+
+  // Bookmarked Schemes
+  const bookmarkedSchemes = useMemo(() => {
+    return allAssessedSchemes.filter(s => bookmarkedIds.includes(s.id));
+  }, [allAssessedSchemes, bookmarkedIds]);
+
+  // Filtered Catalog by search term
+  const filteredCatalogSchemes = useMemo(() => {
+    if (!catalogSearchTerm.trim()) return allAssessedSchemes;
+    const term = catalogSearchTerm.toLowerCase();
+    return allAssessedSchemes.filter(s => 
+      s.name.toLowerCase().includes(term) ||
+      s.summary.toLowerCase().includes(term) ||
+      s.category.toLowerCase().includes(term) ||
+      s.ministry.toLowerCase().includes(term)
+    );
+  }, [allAssessedSchemes, catalogSearchTerm]);
 
   const topMatchesCount = useMemo(() => {
-    return matchedSchemes.filter(s => s.matchScore >= 75).length;
-  }, [matchedSchemes]);
+    return eligibleSchemes.length;
+  }, [eligibleSchemes]);
 
   const highEligibilityCount = useMemo(() => {
-    return matchedSchemes.filter(s => s.matchScore >= 80).length;
-  }, [matchedSchemes]);
+    return eligibleSchemes.filter(s => s.matchScore >= 80).length;
+  }, [eligibleSchemes]);
 
   // Compared Scheme objects
   const comparedSchemes = useMemo(() => {
@@ -181,10 +206,10 @@ export default function App() {
       .filter(s => comparedIds.includes(s.id))
       .map(s => {
         const localizedBase = getLocalizedScheme(s, selectedLanguage);
-        const found = matchedSchemes.find(m => m.id === s.id);
+        const found = allAssessedSchemes.find(m => m.id === s.id);
         return found || { ...localizedBase, matchScore: 70, matchTier: "Moderate Match", tierColor: "#f59e0b" };
       });
-  }, [comparedIds, matchedSchemes, selectedLanguage]);
+  }, [comparedIds, allAssessedSchemes, selectedLanguage]);
 
   const handleSearch = () => {
     setIsSearching(true);
@@ -357,15 +382,15 @@ export default function App() {
                 <span className="citizen-label-strong">{t.activeApplicant}:</span>
                 <span className="citizen-name-badge">{currentUser.name}</span>
                 {currentUser.isAadhaarVerified ? (
-                  <span className="kyc-badge verified">✓ Aadhaar Verified ({currentUser.aadhaar})</span>
+                  <span className="kyc-badge verified">Aadhaar Verified ({currentUser.aadhaar})</span>
                 ) : (
-                  <span className="kyc-badge unverified">⚠ Aadhaar Unverified</span>
+                  <span className="kyc-badge unverified">Aadhaar Unverified</span>
                 )}
                 {currentUser.isPanVerified && (
-                  <span className="kyc-badge verified">✓ PAN Tax Assessed</span>
+                  <span className="kyc-badge verified">PAN Assessed</span>
                 )}
                 {currentUser.isBankVerified && (
-                  <span className="kyc-badge verified">✓ Bank & DBT Verified</span>
+                  <span className="kyc-badge verified">DBT Enabled</span>
                 )}
               </div>
               <button
@@ -373,7 +398,7 @@ export default function App() {
                 className="switch-desk-link"
                 onClick={handleOpenAuthScreen}
               >
-                Switch to Official / CSC Counter →
+                Switch to Official / CSC Counter
               </button>
             </div>
 
@@ -407,48 +432,253 @@ export default function App() {
           />
 
           <section className="results-section">
-            <div className="results-header-bar">
-              <div className="results-count-tag">
-                {showingBookmarksOnly ? (
-                  <span>{t.savedChecklist} ({displayedSchemes.length})</span>
-                ) : (
-                  <span>{t.resultsHeading} ({displayedSchemes.length})</span>
-                )}
-              </div>
-
-              {showingBookmarksOnly && (
+            {/* Dual Window & Tab Navigation Bar */}
+            <div className="window-mode-control-bar">
+              <div className="window-tabs-group" role="tablist">
                 <button
                   type="button"
-                  className="classic-btn-reset"
-                  onClick={() => setShowingBookmarksOnly(false)}
+                  role="tab"
+                  aria-selected={!isDualWindowView && activeWindowTab === 'eligible'}
+                  className={`window-tab-btn ${!isDualWindowView && activeWindowTab === 'eligible' ? 'active' : ''}`}
+                  onClick={() => {
+                    setIsDualWindowView(false);
+                    setActiveWindowTab('eligible');
+                  }}
                 >
-                  {t.backToAll}
+                  <span className="tab-label">{t.windowEligibleTitle || 'Eligible Schemes'}</span>
+                  <span className="tab-count-pill green">{eligibleSchemes.length}</span>
                 </button>
-              )}
-            </div>
 
-            {displayedSchemes.length === 0 ? (
-              <div className="empty-results-box">
-                <h4 className="empty-title">{t.noSchemes}</h4>
-                <p className="empty-desc">{t.noSchemesSub}</p>
-                <button type="button" className="classic-btn-primary" onClick={handleResetFilters} style={{ maxWidth: 220, margin: '1rem auto 0' }}>
-                  {t.resetAll}
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={!isDualWindowView && activeWindowTab === 'all'}
+                  className={`window-tab-btn ${!isDualWindowView && activeWindowTab === 'all' ? 'active' : ''}`}
+                  onClick={() => {
+                    setIsDualWindowView(false);
+                    setActiveWindowTab('all');
+                  }}
+                >
+                  <span className="tab-label">{t.windowAllTitle || 'All Available Schemes'}</span>
+                  <span className="tab-count-pill blue">{allAssessedSchemes.length}</span>
+                </button>
+
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={!isDualWindowView && activeWindowTab === 'bookmarks'}
+                  className={`window-tab-btn ${!isDualWindowView && activeWindowTab === 'bookmarks' ? 'active' : ''}`}
+                  onClick={() => {
+                    setIsDualWindowView(false);
+                    setActiveWindowTab('bookmarks');
+                  }}
+                >
+                  <span className="tab-label">{t.windowBookmarksTitle || 'Saved Bookmarks'}</span>
+                  <span className="tab-count-pill amber">{bookmarkedSchemes.length}</span>
                 </button>
               </div>
+
+              {/* Side-by-Side Dual Window Toggle */}
+              <div className="window-actions-right">
+                <button
+                  type="button"
+                  className={`classic-btn-dual-toggle ${isDualWindowView ? 'active' : ''}`}
+                  onClick={() => setIsDualWindowView(prev => !prev)}
+                  title="Toggle side-by-side display of Eligible Schemes and All Schemes"
+                >
+                  <span>{isDualWindowView ? (t.singleWindowToggle || 'Single Window') : (t.dualWindowToggle || 'Side-by-Side Dual Window')}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* DUAL WINDOW MODE (Side-by-Side) */}
+            {isDualWindowView ? (
+              <div className="dual-window-container">
+                {/* Left Window: Eligible Schemes */}
+                <div className="window-panel window-eligible-pane">
+                  <div className="window-panel-header">
+                    <div className="panel-title-wrap">
+                      <div>
+                        <h3 className="panel-title">{t.windowEligibleTitle || 'Eligible Schemes For You'}</h3>
+                        <p className="panel-subtitle">{t.eligibleFilterSub || 'Schemes matching your verified demographic parameters, income & occupation'}</p>
+                      </div>
+                    </div>
+                    <span className="panel-count-tag green">{eligibleSchemes.length} {t.eligibleTabCount || 'Eligible'}</span>
+                  </div>
+
+                  {eligibleSchemes.length === 0 ? (
+                    <div className="empty-results-box compact">
+                      <h4 className="empty-title">{t.noSchemes}</h4>
+                      <p className="empty-desc">{t.noSchemesSub}</p>
+                      <button type="button" className="classic-btn-primary" onClick={handleResetFilters}>
+                        {t.resetAll}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="schemes-card-stack">
+                      {eligibleSchemes.map(scheme => (
+                        <SchemeCard
+                          key={scheme.id}
+                          scheme={scheme}
+                          onSelect={setSelectedScheme}
+                          isBookmarked={bookmarkedIds.includes(scheme.id)}
+                          onToggleBookmark={handleToggleBookmark}
+                          isCompared={comparedIds.includes(scheme.id)}
+                          onToggleCompare={handleToggleCompare}
+                          selectedLanguage={selectedLanguage}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Right Window: All Available Schemes Catalog */}
+                <div className="window-panel window-catalog-pane">
+                  <div className="window-panel-header">
+                    <div className="panel-title-wrap">
+                      <div>
+                        <h3 className="panel-title">{t.windowAllTitle || 'All Available Schemes'}</h3>
+                        <p className="panel-subtitle">{t.allCatalogSub || 'Complete master repository of national and state government schemes'}</p>
+                      </div>
+                    </div>
+                    <span className="panel-count-tag blue">{filteredCatalogSchemes.length} Total</span>
+                  </div>
+
+                  {/* Catalog Filter Input */}
+                  <div className="catalog-search-toolbar">
+                    <input
+                      type="text"
+                      className="catalog-search-input"
+                      placeholder="Search schemes by name, keyword or ministry..."
+                      value={catalogSearchTerm}
+                      onChange={(e) => setCatalogSearchTerm(e.target.value)}
+                    />
+                    {catalogSearchTerm && (
+                      <button
+                        type="button"
+                        className="catalog-clear-btn"
+                        onClick={() => setCatalogSearchTerm('')}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+
+                  {filteredCatalogSchemes.length === 0 ? (
+                    <div className="empty-results-box compact">
+                      <h4 className="empty-title">No Schemes Found</h4>
+                      <p className="empty-desc">No government schemes matched "{catalogSearchTerm}".</p>
+                      <button type="button" className="classic-btn-secondary" onClick={() => setCatalogSearchTerm('')}>
+                        Clear Search
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="schemes-card-stack">
+                      {filteredCatalogSchemes.map(scheme => (
+                        <SchemeCard
+                          key={scheme.id}
+                          scheme={scheme}
+                          onSelect={setSelectedScheme}
+                          isBookmarked={bookmarkedIds.includes(scheme.id)}
+                          onToggleBookmark={handleToggleBookmark}
+                          isCompared={comparedIds.includes(scheme.id)}
+                          onToggleCompare={handleToggleCompare}
+                          selectedLanguage={selectedLanguage}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             ) : (
-              <div className="schemes-card-grid">
-                {displayedSchemes.map(scheme => (
-                  <SchemeCard
-                    key={scheme.id}
-                    scheme={scheme}
-                    onSelect={setSelectedScheme}
-                    isBookmarked={bookmarkedIds.includes(scheme.id)}
-                    onToggleBookmark={handleToggleBookmark}
-                    isCompared={comparedIds.includes(scheme.id)}
-                    onToggleCompare={handleToggleCompare}
-                    selectedLanguage={selectedLanguage}
-                  />
-                ))}
+              /* SINGLE WINDOW MODE (Active Tab) */
+              <div className="single-window-container">
+                {/* Active Window Banner */}
+                <div className="single-window-banner">
+                  <div className="window-banner-left">
+                    <h3 className="window-heading">
+                      {activeWindowTab === 'eligible' && (
+                        <>{t.windowEligibleTitle || 'Eligible Schemes For You'} ({eligibleSchemes.length})</>
+                      )}
+                      {activeWindowTab === 'all' && (
+                        <>{t.windowAllTitle || 'All Available Schemes Catalog'} ({filteredCatalogSchemes.length})</>
+                      )}
+                      {activeWindowTab === 'bookmarks' && (
+                        <>{t.windowBookmarksTitle || 'Saved Bookmarks Checklist'} ({bookmarkedSchemes.length})</>
+                      )}
+                    </h3>
+                    <p className="window-subheading">
+                      {activeWindowTab === 'eligible' && (t.eligibleFilterSub || 'Schemes matching your verified demographic parameters, income & occupation')}
+                      {activeWindowTab === 'all' && (t.allCatalogSub || 'Complete master repository of national and state government schemes')}
+                      {activeWindowTab === 'bookmarks' && 'Your saved schemes for fast comparison and intake processing'}
+                    </p>
+                  </div>
+
+                  {activeWindowTab === 'all' && (
+                    <div className="catalog-search-toolbar single">
+                      <input
+                        type="text"
+                        className="catalog-search-input"
+                        placeholder="Search all schemes..."
+                        value={catalogSearchTerm}
+                        onChange={(e) => setCatalogSearchTerm(e.target.value)}
+                      />
+                      {catalogSearchTerm && (
+                        <button
+                          type="button"
+                          className="catalog-clear-btn"
+                          onClick={() => setCatalogSearchTerm('')}
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Single Window Schemes List */}
+                {(() => {
+                  const targetList = activeWindowTab === 'eligible' 
+                    ? eligibleSchemes 
+                    : activeWindowTab === 'all' 
+                      ? filteredCatalogSchemes 
+                      : bookmarkedSchemes;
+
+                  if (targetList.length === 0) {
+                    return (
+                      <div className="empty-results-box">
+                        <h4 className="empty-title">
+                          {activeWindowTab === 'bookmarks' ? 'No Saved Schemes' : t.noSchemes}
+                        </h4>
+                        <p className="empty-desc">
+                          {activeWindowTab === 'bookmarks' 
+                            ? 'You have not saved any schemes yet. Click the "Save" button on any scheme card.'
+                            : t.noSchemesSub}
+                        </p>
+                        <button type="button" className="classic-btn-primary" onClick={handleResetFilters} style={{ maxWidth: 220, margin: '1rem auto 0' }}>
+                          {t.resetAll}
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="schemes-card-grid">
+                      {targetList.map(scheme => (
+                        <SchemeCard
+                          key={scheme.id}
+                          scheme={scheme}
+                          onSelect={setSelectedScheme}
+                          isBookmarked={bookmarkedIds.includes(scheme.id)}
+                          onToggleBookmark={handleToggleBookmark}
+                          isCompared={comparedIds.includes(scheme.id)}
+                          onToggleCompare={handleToggleCompare}
+                          selectedLanguage={selectedLanguage}
+                        />
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </section>

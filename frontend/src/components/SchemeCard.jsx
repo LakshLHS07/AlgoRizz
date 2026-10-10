@@ -18,7 +18,6 @@ export function SchemeCard({
       {/* Top Ministry Banner */}
       <div className="card-ministry-banner">
         <div className="ministry-title-wrap">
-          <span className="ministry-flag-icon">🏛️</span>
           <span className="ministry-name-text">{scheme.ministry}</span>
         </div>
         <div className="scheme-ref-code">
@@ -36,10 +35,17 @@ export function SchemeCard({
             </h3>
           </div>
 
-          {/* Match Score Stamp */}
-          <div className={`eligibility-stamp-badge ${isHighMatch ? 'stamp-eligible' : 'stamp-moderate'}`}>
-            <span className="stamp-score">{scheme.matchScore}%</span>
-            <span className="stamp-status">{isHighMatch ? t.eligibleStamp : t.assessedStamp}</span>
+          {/* Match Score & Eligibility Stamp */}
+          <div className="stamp-and-status-wrap">
+            <div className={`eligibility-stamp-badge ${isHighMatch ? 'stamp-eligible' : 'stamp-moderate'}`}>
+              <span className="stamp-score">{scheme.matchScore}%</span>
+              <span className="stamp-status">{isHighMatch ? t.eligibleStamp : t.assessedStamp}</span>
+            </div>
+            {scheme.isEligible !== undefined && (
+              <span className={`card-eligibility-pill ${scheme.isEligible ? 'pill-eligible' : 'pill-review'}`}>
+                {scheme.isEligible ? (t.statusEligible || '✓ Eligible') : (t.statusCheckCriteria || '⚠ Review Criteria')}
+              </span>
+            )}
           </div>
         </div>
 
