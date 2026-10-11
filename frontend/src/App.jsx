@@ -5,6 +5,7 @@ import { StatsSection } from './components/StatsSection';
 import { ProfileDrawer } from './components/ProfileDrawer';
 import { SchemeCard } from './components/SchemeCard';
 import { SchemeModal } from './components/SchemeModal';
+import { AIVideoGuideModal } from './components/AIVideoGuideModal';
 import { ComparisonModal } from './components/ComparisonModal';
 import { BackendConfigModal } from './components/BackendConfigModal';
 import { FullScreenAuthPage } from './components/FullScreenAuthPage';
@@ -77,6 +78,7 @@ export default function App() {
 
   // Modals & Drawers
   const [selectedScheme, setSelectedScheme] = useState(null);
+  const [activeVideoScheme, setActiveVideoScheme] = useState(null);
   const [isBackendModalOpen, setIsBackendModalOpen] = useState(false);
   const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
   const [showingBookmarksOnly, setShowingBookmarksOnly] = useState(false);
@@ -521,6 +523,7 @@ export default function App() {
                           key={scheme.id}
                           scheme={scheme}
                           onSelect={setSelectedScheme}
+                          onOpenVideo={setActiveVideoScheme}
                           isBookmarked={bookmarkedIds.includes(scheme.id)}
                           onToggleBookmark={handleToggleBookmark}
                           isCompared={comparedIds.includes(scheme.id)}
@@ -579,6 +582,7 @@ export default function App() {
                           key={scheme.id}
                           scheme={scheme}
                           onSelect={setSelectedScheme}
+                          onOpenVideo={setActiveVideoScheme}
                           isBookmarked={bookmarkedIds.includes(scheme.id)}
                           onToggleBookmark={handleToggleBookmark}
                           isCompared={comparedIds.includes(scheme.id)}
@@ -669,6 +673,7 @@ export default function App() {
                           key={scheme.id}
                           scheme={scheme}
                           onSelect={setSelectedScheme}
+                          onOpenVideo={setActiveVideoScheme}
                           isBookmarked={bookmarkedIds.includes(scheme.id)}
                           onToggleBookmark={handleToggleBookmark}
                           isCompared={comparedIds.includes(scheme.id)}
@@ -702,8 +707,19 @@ export default function App() {
           scheme={selectedScheme}
           userProfile={profile}
           onClose={() => setSelectedScheme(null)}
+          onOpenVideo={setActiveVideoScheme}
           isBookmarked={bookmarkedIds.includes(selectedScheme.id)}
           onToggleBookmark={handleToggleBookmark}
+          selectedLanguage={selectedLanguage}
+        />
+      )}
+
+      {/* AI Generated Video Guide Player Modal */}
+      {activeVideoScheme && (
+        <AIVideoGuideModal
+          scheme={activeVideoScheme}
+          userProfile={profile}
+          onClose={() => setActiveVideoScheme(null)}
           selectedLanguage={selectedLanguage}
         />
       )}

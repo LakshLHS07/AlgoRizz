@@ -4,6 +4,7 @@ import { getTranslation } from '../utils/translations';
 export function SchemeCard({
   scheme,
   onSelect,
+  onOpenVideo,
   isBookmarked,
   onToggleBookmark,
   isCompared,
@@ -92,13 +93,29 @@ export function SchemeCard({
 
         {/* Card Action Buttons */}
         <div className="card-bottom-actions">
-          <button
-            type="button"
-            className="classic-btn-primary"
-            onClick={() => onSelect(scheme)}
-          >
-            {t.viewGuidelines}
-          </button>
+          <div className="primary-actions-cluster">
+            <button
+              type="button"
+              className="classic-btn-primary"
+              onClick={() => onSelect(scheme)}
+            >
+              {t.viewGuidelines}
+            </button>
+
+            {onOpenVideo && (
+              <button
+                type="button"
+                className="classic-btn-video"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenVideo(scheme);
+                }}
+                title="Watch AI generated video walkthrough and benefits"
+              >
+                <span>AI Video Guide</span>
+              </button>
+            )}
+          </div>
 
           <div className="secondary-btn-group">
             <button

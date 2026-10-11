@@ -12,6 +12,7 @@ export function SchemeModal({
   scheme: rawScheme,
   userProfile,
   onClose,
+  onOpenVideo,
   isBookmarked,
   onToggleBookmark,
   selectedLanguage = 'en'
@@ -122,6 +123,18 @@ export function SchemeModal({
             <span className="banner-label">{t.applicationMode}</span>
             <span className="banner-badge open">{scheme.applicationMode || scheme.deadline}</span>
           </div>
+          {onOpenVideo && (
+            <div className="benefit-banner-item video-cta">
+              <button
+                type="button"
+                className="banner-video-play-btn"
+                onClick={() => onOpenVideo(rawScheme)}
+                title="Watch AI generated video on benefits and how to enroll"
+              >
+                <span>▶ {t.watchAiVideo || 'Watch AI Video Guide'}</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Tab Navigation */}
@@ -259,13 +272,26 @@ export function SchemeModal({
 
         {/* Modal Footer */}
         <div className="modal-footer">
-          <button
-            type="button"
-            className={`secondary-action-button ${isBookmarked ? 'active' : ''}`}
-            onClick={() => onToggleBookmark(scheme.id)}
-          >
-            {isBookmarked ? t.saved : t.save}
-          </button>
+          <div className="modal-footer-left">
+            <button
+              type="button"
+              className={`secondary-action-button ${isBookmarked ? 'active' : ''}`}
+              onClick={() => onToggleBookmark(scheme.id)}
+            >
+              {isBookmarked ? t.saved : t.save}
+            </button>
+
+            {onOpenVideo && (
+              <button
+                type="button"
+                className="secondary-action-button video-btn-accent"
+                onClick={() => onOpenVideo(rawScheme)}
+                title="Watch AI enrollment and benefits video guide"
+              >
+                <span>▶ AI Enrollment Video</span>
+              </button>
+            )}
+          </div>
           
           <a
             href={scheme.officialUrl}
