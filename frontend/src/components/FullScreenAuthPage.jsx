@@ -3,7 +3,7 @@ import {
   validateAadhaarFormat, 
   validatePanFormat, 
   validateIfscFormat,
-  verifyAadhaarOtp, 
+  verifyAadhaarViaDigiLocker, 
   verifyPanCard, 
   verifyBankStatement,
   MAJOR_BANKS 
@@ -24,10 +24,8 @@ export function FullScreenAuthPage({
   const [selectedRole, setSelectedRole] = useState(initialRole);
   const [citizenVerificationMode, setCitizenVerificationMode] = useState('kyc'); // 'kyc' | 'mobile'
 
-  // Step 1: Aadhaar State
+  // Step 1: Aadhaar State (DigiLocker direct verification)
   const [aadhaarInput, setAadhaarInput] = useState('');
-  const [aadhaarOtpSent, setAadhaarOtpSent] = useState(false);
-  const [aadhaarOtp, setAadhaarOtp] = useState('');
   const [aadhaarVerifiedData, setAadhaarVerifiedData] = useState(null);
   const [isVerifyingAadhaar, setIsVerifyingAadhaar] = useState(false);
   const [aadhaarError, setAadhaarError] = useState('');
@@ -80,25 +78,16 @@ export function FullScreenAuthPage({
     setAadhaarError('');
   };
 
-  const handleSendAadhaarOtp = () => {
+  const handleVerifyAadhaarDigiLocker = async () => {
     const raw = aadhaarInput.replace(/\s/g, '');
     if (!validateAadhaarFormat(raw)) {
       setAadhaarError("Please enter a valid 12-digit Aadhaar number.");
       return;
     }
-    setAadhaarOtpSent(true);
-    setAadhaarError('');
-  };
-
-  const handleVerifyAadhaar = async () => {
-    if (!aadhaarOtp) {
-      setAadhaarError("Please enter the OTP sent to your registered mobile.");
-      return;
-    }
     setIsVerifyingAadhaar(true);
     setAadhaarError('');
 
-    const res = await verifyAadhaarOtp(aadhaarInput, aadhaarOtp);
+    const res = await verifyAadhaarViaDigiLocker(aadhaarInput);
     setIsVerifyingAadhaar(false);
 
     if (res.success) {
@@ -234,11 +223,16 @@ export function FullScreenAuthPage({
       <header className="auth-fullscreen-header">
         <div className="auth-header-inner">
           <div className="auth-brand-row">
-            <div className="classic-emblem-badge small-emblem">
-              <div className="emblem-inner">
-                <span className="emblem-crest">UDYAMA</span>
-                <span className="emblem-motto">सत्यमेव जयते</span>
-              </div>
+            <div className="portal-logo-slot" aria-label="Udyama Official Portal Logo" title="Udyama Official Logo">
+              <img 
+                src="/udyama-logo.png" 
+                alt="Udyama Official Portal Logo" 
+                className="portal-logo-img" 
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = '/udyama-logo-raw.png';
+                }}
+              />
             </div>
             <div>
               <div className="auth-title-line">
@@ -380,12 +374,12 @@ export function FullScreenAuthPage({
 
                   {citizenVerificationMode === 'kyc' ? (
                     <div className="kyc-stepper-wrapper">
-                      {/* Step 1: Aadhaar */}
+                      {/* Step 1: Aadhaar via DigiLocker */}
                       <fieldset className={`kyc-fieldset ${aadhaarVerifiedData ? 'completed' : 'active'}`}>
                         <legend className="kyc-legend">
                           <span className="legend-num">1</span>
-                          <span>Aadhaar UIDAI e-KYC Verification</span>
-                          {aadhaarVerifiedData && <span className="verified-tag">✓ VERIFIED</span>}
+                          <span>Aadhaar DigiLocker Verification</span>
+                          {aadhaarVerifiedData && <span className="verified-tag">DIGILOCKER VERIFIED</span>}
                         </legend>
 
                         {!aadhaarVerifiedData ? (
@@ -400,57 +394,21 @@ export function FullScreenAuthPage({
                                   placeholder="XXXX XXXX XXXX"
                                   value={aadhaarInput}
                                   onChange={handleAadhaarChange}
-                                  disabled={aadhaarOtpSent}
+                                  disabled={isVerifyingAadhaar}
                                 />
-                                {!aadhaarOtpSent ? (
-                                  <button
-                                    type="button"
-                                    className="classic-action-btn secondary"
-                                    onClick={handleSendAadhaarOtp}
-                                  >
-                                    Get UIDAI OTP
-                                  </button>
-                                ) : (
-                                  <button
-                                    type="button"
-                                    className="classic-action-btn secondary"
-                                    onClick={() => {
-                                      setAadhaarOtpSent(false);
-                                      setAadhaarOtp('');
-                                    }}
-                                  >
-                                    Change Number
-                                  </button>
-                                )}
+                                <button
+                                  type="button"
+                                  className="classic-action-btn primary"
+                                  onClick={handleVerifyAadhaarDigiLocker}
+                                  disabled={isVerifyingAadhaar}
+                                >
+                                  {isVerifyingAadhaar ? "Connecting DigiLocker..." : "Verify via DigiLocker"}
+                                </button>
                               </div>
+                              <span className="field-hint-text">
+                                Verified directly via DigiLocker National Identity Repository. No SMS OTP required on webpage.
+                              </span>
                             </div>
-
-                            {aadhaarOtpSent && (
-                              <div className="form-field-group otp-input-block">
-                                <label htmlFor="aadhaar-otp-box">
-                                  Enter OTP sent to registered Aadhaar mobile <strong>(Demo OTP: 1234)</strong>
-                                </label>
-                                <div className="input-with-button-row">
-                                  <input
-                                    id="aadhaar-otp-box"
-                                    type="password"
-                                    maxLength="6"
-                                    className="portal-input classic-input"
-                                    placeholder="Enter 4 or 6-digit OTP"
-                                    value={aadhaarOtp}
-                                    onChange={(e) => setAadhaarOtp(e.target.value)}
-                                  />
-                                  <button
-                                    type="button"
-                                    className="classic-action-btn primary"
-                                    onClick={handleVerifyAadhaar}
-                                    disabled={isVerifyingAadhaar}
-                                  >
-                                    {isVerifyingAadhaar ? "Verifying..." : "Verify e-KYC OTP"}
-                                  </button>
-                                </div>
-                              </div>
-                            )}
 
                             {aadhaarError && (
                               <div className="classic-alert error">{aadhaarError}</div>
@@ -463,8 +421,8 @@ export function FullScreenAuthPage({
                                 <tr>
                                   <td className="table-label">Full Name:</td>
                                   <td className="table-value"><strong>{aadhaarVerifiedData.name}</strong></td>
-                                  <td className="table-label">Age & Gender:</td>
-                                  <td className="table-value">{aadhaarVerifiedData.age} Years ({aadhaarVerifiedData.gender})</td>
+                                  <td className="table-label">Age & DOB:</td>
+                                  <td className="table-value">{aadhaarVerifiedData.age} Years ({aadhaarVerifiedData.dob})</td>
                                 </tr>
                                 <tr>
                                   <td className="table-label">Aadhaar Reference:</td>
@@ -472,8 +430,32 @@ export function FullScreenAuthPage({
                                   <td className="table-label">Residential State:</td>
                                   <td className="table-value">{aadhaarVerifiedData.state} ({aadhaarVerifiedData.district})</td>
                                 </tr>
+                                <tr>
+                                  <td className="table-label">DigiLocker Doc URI:</td>
+                                  <td className="table-value" colSpan="3">
+                                    <span style={{ fontFamily: 'monospace', color: '#047857' }}>
+                                      {aadhaarVerifiedData.digilockerUri || `in.gov.uidai-adhr-${aadhaarInput.replace(/\s/g, '').slice(-4)}`}
+                                    </span>
+                                    <span style={{ marginLeft: '0.75rem', fontSize: '0.75rem', color: '#64748b' }}>
+                                      (DigiLocker Authentic Registry Verified)
+                                    </span>
+                                  </td>
+                                </tr>
                               </tbody>
                             </table>
+                            <div style={{ marginTop: '0.65rem', textAlign: 'right' }}>
+                              <button
+                                type="button"
+                                className="classic-action-btn secondary"
+                                style={{ padding: '0.3rem 0.75rem', fontSize: '0.75rem' }}
+                                onClick={() => {
+                                  setAadhaarVerifiedData(null);
+                                  setAadhaarInput('');
+                                }}
+                              >
+                                Re-verify Aadhaar
+                              </button>
+                            </div>
                           </div>
                         )}
                       </fieldset>
@@ -483,7 +465,7 @@ export function FullScreenAuthPage({
                         <legend className="kyc-legend">
                           <span className="legend-num">2</span>
                           <span>PAN Card Tax & Income Category</span>
-                          {panVerifiedData && <span className="verified-tag">✓ VERIFIED</span>}
+                          {panVerifiedData && <span className="verified-tag">VERIFIED</span>}
                         </legend>
 
                         {aadhaarVerifiedData && !panVerifiedData && (
@@ -541,7 +523,7 @@ export function FullScreenAuthPage({
                         <legend className="kyc-legend">
                           <span className="legend-num">3</span>
                           <span>Bank Account & 6-Month Inflow Statement</span>
-                          {bankVerifiedData && <span className="verified-tag">✓ VERIFIED</span>}
+                          {bankVerifiedData && <span className="verified-tag">VERIFIED</span>}
                         </legend>
 
                         {aadhaarVerifiedData && !bankVerifiedData && (

@@ -101,6 +101,9 @@ class AadhaarVerifyOtpRequest(BaseModel):
     aadhaarNumber: str
     otp: str
 
+class DigiLockerAadhaarRequest(BaseModel):
+    aadhaarNumber: str
+
 class PanVerifyRequest(BaseModel):
     panNumber: str
 

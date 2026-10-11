@@ -112,7 +112,7 @@ export function UserJourneyWizard({
       <div className="wizard-body-content">
         {/* STEP 1: AGE */}
         {currentStep === 1 && (
-          <div className="wizard-step-pane">
+          <div className="wizard-step-pane step-age-pane">
             <div className="wizard-question-block">
               <label className="wizard-question-label" htmlFor="minimal-age-input">
                 How old are you? (Citizen Age)

@@ -349,6 +349,8 @@ export default function App() {
         onOpenLanguageModal={() => setIsLanguageModalOpen(true)}
         showingBookmarksOnly={showingBookmarksOnly}
         currentUser={currentUser}
+        profile={profile}
+        eligibleCount={eligibleSchemes.length}
         onOpenAuthModal={handleOpenAuthScreen}
         onLogout={handleLogout}
         fontSizeMultiplier={fontSizeMultiplier}
@@ -370,30 +372,6 @@ export default function App() {
         ) : (
           /* If Citizen Role: Render Citizen Discovery */
           <>
-            {/* Minimalist Beneficiary Strip */}
-            <div className="minimal-user-strip">
-              <div className="user-strip-left">
-                <span className="user-strip-name">{currentUser?.name || 'Citizen'}</span>
-                <span className="user-strip-divider">•</span>
-                <span className="user-strip-meta">
-                  {profile.age} yrs · {profile.occupation} · {profile.state}
-                </span>
-                {currentUser?.isAadhaarVerified && (
-                  <span className="user-strip-badge">Aadhaar Linked</span>
-                )}
-              </div>
-
-              <div className="user-strip-right">
-                <button
-                  type="button"
-                  className="user-strip-switch-link"
-                  onClick={handleOpenAuthScreen}
-                >
-                  CSC Official Counter →
-                </button>
-              </div>
-            </div>
-
             {/* Minimalist Mode Selector Tabs */}
             <div className="minimal-mode-selector">
               <div className="minimal-mode-tabs" role="tablist">

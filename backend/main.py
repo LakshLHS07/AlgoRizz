@@ -13,6 +13,7 @@ from .schemas import (
     AadhaarSendOtpRequest,
     AadhaarVerifyOtpRequest,
     AadhaarVerifyResponse,
+    DigiLockerAadhaarRequest,
     PanVerifyRequest,
     PanVerifyResponse,
     BankVerifyRequest,
@@ -21,7 +22,13 @@ from .schemas import (
 )
 from .schemes_data import SCHEMES_DATABASE, SCHEME_CATEGORIES, INDIAN_STATES, OCCUPATIONS
 from .nlp_matcher import extract_entities_from_prompt, match_all_schemes
-from .kyc_service import send_aadhaar_otp, verify_aadhaar_otp, verify_pan_card, verify_bank_account
+from .kyc_service import (
+    send_aadhaar_otp, 
+    verify_aadhaar_otp, 
+    verify_aadhaar_via_digilocker, 
+    verify_pan_card, 
+    verify_bank_account
+)
 from .localization import localize_scheme_dict
 
 app = FastAPI(
@@ -153,6 +160,13 @@ def get_metadata_parameters():
     }
 
 # KYC Endpoints
+@app.post("/api/kyc/digilocker/verify-aadhaar", response_model=AadhaarVerifyResponse, tags=["DigiLocker Verification"])
+def verify_aadhaar_digilocker_endpoint(req: DigiLockerAadhaarRequest):
+    """
+    Direct Aadhaar validity verification via DigiLocker National Repository without SMS OTP.
+    """
+    return verify_aadhaar_via_digilocker(req.aadhaarNumber)
+
 @app.post("/api/kyc/aadhaar/send-otp", tags=["e-KYC Verification"])
 def send_aadhaar_otp_endpoint(req: AadhaarSendOtpRequest):
     return send_aadhaar_otp(req.aadhaarNumber)

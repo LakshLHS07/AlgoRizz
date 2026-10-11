@@ -10,7 +10,7 @@ export function Footer() {
           {/* Column 1: Platform Brand */}
           <div className="footer-col brand-col">
             <div className="footer-brand-header">
-              <span className="footer-brand-symbol">UD</span>
+              <img src="/udyama-logo.png" alt="Udyama Logo" className="footer-brand-logo-img" />
               <span className="footer-brand-title">Udyama</span>
             </div>
             <p className="footer-modern-desc">

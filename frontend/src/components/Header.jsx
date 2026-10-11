@@ -13,6 +13,8 @@ export function Header({
   onOpenLanguageModal,
   showingBookmarksOnly,
   currentUser,
+  profile,
+  eligibleCount,
   onOpenAuthModal,
   onLogout,
   fontSizeMultiplier,
@@ -26,12 +28,25 @@ export function Header({
   return (
     <header className="minimal-header" aria-label="Portal Navigation">
       <div className="minimal-header-container">
-        {/* Brand */}
+        {/* Brand with Official Logo */}
         <div className="minimal-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-          <div className="minimal-brand-mark">UD</div>
+          <div className="portal-logo-slot" aria-label="Udyama Official Portal Logo" title="Udyama Official Portal Logo">
+            <img 
+              src="/udyama-logo.png" 
+              alt="Udyama Official Portal Logo" 
+              className="portal-logo-img" 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = '/udyama-logo-raw.png';
+              }}
+            />
+          </div>
           <div className="minimal-brand-info">
-            <span className="minimal-brand-title">Udyama</span>
-            <span className="minimal-brand-tag">National Welfare Portal</span>
+            <div className="brand-title-row">
+              <span className="minimal-brand-title">UDYAMA (उद्यम)</span>
+              <span className="gov-india-badge">Government of India</span>
+            </div>
+            <span className="minimal-brand-tag">National Portal for Citizen Welfare Schemes</span>
           </div>
         </div>
 
@@ -66,6 +81,16 @@ export function Header({
 
         {/* Right Controls */}
         <div className="minimal-actions">
+          {/* CSC Official Counter Action */}
+          <button
+            type="button"
+            className="header-official-counter-btn"
+            onClick={onOpenAuthModal}
+            title="Switch to CSC Official / Authorized Operator Desk"
+          >
+            <span>CSC Official Counter →</span>
+          </button>
+
           {/* Language Selector */}
           <button
             type="button"
@@ -117,6 +142,37 @@ export function Header({
           </div>
         </div>
       </div>
+
+      {/* Absorbed Beneficiary Profile Bar inside Title Card */}
+      {profile && (
+        <div className="header-beneficiary-strip">
+          <div className="header-beneficiary-container">
+            <div className="header-beneficiary-left">
+              <span className="beneficiary-profile-label">Current Beneficiary Profile:</span>
+              <span className="beneficiary-user-name">
+                {currentUser?.name || 'Guest Citizen'}
+              </span>
+              <span className="beneficiary-separator">•</span>
+              <span className="beneficiary-demographics">
+                {profile.age} yrs · {profile.occupation} · {profile.state}
+              </span>
+              {currentUser?.isAadhaarVerified ? (
+                <span className="beneficiary-status-badge verified">✓ Aadhaar Verified</span>
+              ) : (
+                <span className="beneficiary-status-badge guest">Self-Assessed / Guest</span>
+              )}
+            </div>
+
+            <div className="header-beneficiary-right">
+              {eligibleCount !== undefined && (
+                <span className="beneficiary-match-note">
+                  Matched <strong>{eligibleCount}</strong> eligible schemes
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
