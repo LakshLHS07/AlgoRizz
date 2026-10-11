@@ -13,6 +13,7 @@ import { OfficialDashboard } from './components/OfficialDashboard';
 import { ReceiptModal } from './components/ReceiptModal';
 import { LanguageModal } from './components/LanguageModal';
 import { Footer } from './components/Footer';
+import { UserJourneyWizard } from './components/UserJourneyWizard';
 import { SCHEMES_DATABASE } from './data/schemesData';
 import { matchSchemes, extractEntitiesFromPrompt } from './utils/nlpMatcher';
 import { DEFAULT_BACKEND_URL, pingBackend } from './utils/apiBridge';
@@ -27,10 +28,14 @@ const INITIAL_PROFILE = {
   category: "OBC",
   occupation: "farmer",
   hasLand: true,
-  isRural: true
+  isRural: true,
+  isDivyang: false,
+  isMinority: false,
+  isBPL: false
 };
 
 export default function App() {
+  const [discoveryMode, setDiscoveryMode] = useState('journey'); // 'journey' | 'nlp' | 'catalog'
   const [prompt, setPrompt] = useState(
     "I am a 28-year-old female farmer in Maharashtra with 2 acres land and family income of 1.4 Lakhs, looking for crop insurance and education financial assistance for my daughter."
   );
@@ -352,19 +357,6 @@ export default function App() {
         setIsHighContrast={setIsHighContrast}
       />
 
-      {/* Breadcrumb Navigation Bar */}
-      <div className="classic-breadcrumb-bar">
-        <div className="breadcrumb-container">
-          <span className="crumb-item">{t.home}</span>
-          <span className="crumb-sep">/</span>
-          <span className="crumb-item">Citizen Services</span>
-          <span className="crumb-sep">/</span>
-          <span className="crumb-item active">
-            {currentUser.role === 'official' ? t.officialDesk : t.resultsHeading}
-          </span>
-        </div>
-      </div>
-
       <main className="main-content">
         {/* If Official Role: Render Official Intake Dashboard */}
         {currentUser.role === 'official' ? (
@@ -376,42 +368,95 @@ export default function App() {
             selectedLanguage={selectedLanguage}
           />
         ) : (
-          /* If Citizen Role: Render Citizen Natural Language Search & Discovery */
+          /* If Citizen Role: Render Citizen Discovery */
           <>
-            {/* Citizen Verified Status Strip */}
-            <div className="citizen-status-ribbon">
-              <div className="citizen-info-badges">
-                <span className="citizen-label-strong">{t.activeApplicant}:</span>
-                <span className="citizen-name-badge">{currentUser.name}</span>
-                {currentUser.isAadhaarVerified ? (
-                  <span className="kyc-badge verified">Aadhaar Verified ({currentUser.aadhaar})</span>
-                ) : (
-                  <span className="kyc-badge unverified">Aadhaar Unverified</span>
-                )}
-                {currentUser.isPanVerified && (
-                  <span className="kyc-badge verified">PAN Assessed</span>
-                )}
-                {currentUser.isBankVerified && (
-                  <span className="kyc-badge verified">DBT Enabled</span>
+            {/* Minimalist Beneficiary Strip */}
+            <div className="minimal-user-strip">
+              <div className="user-strip-left">
+                <span className="user-strip-name">{currentUser?.name || 'Citizen'}</span>
+                <span className="user-strip-divider">•</span>
+                <span className="user-strip-meta">
+                  {profile.age} yrs · {profile.occupation} · {profile.state}
+                </span>
+                {currentUser?.isAadhaarVerified && (
+                  <span className="user-strip-badge">Aadhaar Linked</span>
                 )}
               </div>
-              <button
-                type="button"
-                className="switch-desk-link"
-                onClick={handleOpenAuthScreen}
-              >
-                Switch to Official / CSC Counter
-              </button>
+
+              <div className="user-strip-right">
+                <button
+                  type="button"
+                  className="user-strip-switch-link"
+                  onClick={handleOpenAuthScreen}
+                >
+                  CSC Official Counter →
+                </button>
+              </div>
             </div>
 
-            <NLPPromptBar
-              prompt={prompt}
-              setPrompt={setPrompt}
-              onSearch={handleSearch}
-              isSearching={isSearching}
-              extractedEntities={extractedEntities}
-              selectedLanguage={selectedLanguage}
-            />
+            {/* Minimalist Mode Selector Tabs */}
+            <div className="minimal-mode-selector">
+              <div className="minimal-mode-tabs" role="tablist">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={discoveryMode === 'journey'}
+                  className={`mode-tab ${discoveryMode === 'journey' ? 'active' : ''}`}
+                  onClick={() => setDiscoveryMode('journey')}
+                >
+                  Guided Journey
+                </button>
+
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={discoveryMode === 'nlp'}
+                  className={`mode-tab ${discoveryMode === 'nlp' ? 'active' : ''}`}
+                  onClick={() => setDiscoveryMode('nlp')}
+                >
+                  AI Prompt Search
+                </button>
+
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={discoveryMode === 'catalog'}
+                  className={`mode-tab ${discoveryMode === 'catalog' ? 'active' : ''}`}
+                  onClick={() => {
+                    setDiscoveryMode('catalog');
+                    const el = document.getElementById('schemes-results-anchor');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  All Schemes ({allAssessedSchemes.length})
+                </button>
+              </div>
+            </div>
+
+            {/* Render Selected Discovery Mode */}
+            {discoveryMode === 'journey' && (
+              <UserJourneyWizard
+                profile={profile}
+                setProfile={setProfile}
+                matchedCount={eligibleSchemes.length}
+                onCompleteJourney={() => {
+                  const el = document.getElementById('schemes-results-anchor');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                selectedLanguage={selectedLanguage}
+              />
+            )}
+
+            {discoveryMode === 'nlp' && (
+              <NLPPromptBar
+                prompt={prompt}
+                setPrompt={setPrompt}
+                onSearch={handleSearch}
+                isSearching={isSearching}
+                extractedEntities={extractedEntities}
+                selectedLanguage={selectedLanguage}
+              />
+            )}
 
             <StatsSection
               totalSchemes={SCHEMES_DATABASE.length}
@@ -421,6 +466,8 @@ export default function App() {
             />
           </>
         )}
+
+        <div id="schemes-results-anchor"></div>
 
         {/* Results Grid Layout */}
         <div className="app-main-grid">

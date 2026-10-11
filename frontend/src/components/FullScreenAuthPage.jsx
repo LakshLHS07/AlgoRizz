@@ -259,7 +259,7 @@ export function FullScreenAuthPage({
               onClick={onOpenLanguageModal}
               title="Select Language (22 Indian Languages)"
             >
-              <span className="lang-icon">🌐</span>
+              <span className="lang-code-tag">{currentLangObj.code.toUpperCase()}</span>
               <span className="lang-active-label">{currentLangObj.nativeName}</span>
               <span className="lang-chevron">▼</span>
             </button>
@@ -282,7 +282,6 @@ export function FullScreenAuthPage({
           <aside className="auth-sidebar-info">
             <div className="classic-info-box">
               <div className="info-box-header">
-                <span className="info-header-icon">⚖️</span>
                 <h4>Official Notice & Disclaimer</h4>
               </div>
               <p className="info-box-text">
@@ -295,7 +294,6 @@ export function FullScreenAuthPage({
 
             <div className="classic-info-box">
               <div className="info-box-header">
-                <span className="info-header-icon">📑</span>
                 <h4>Mandatory e-KYC Documents</h4>
               </div>
               <ul className="info-steps-list">
@@ -316,7 +314,6 @@ export function FullScreenAuthPage({
 
             <div className="classic-info-box helpline-box">
               <div className="info-box-header">
-                <span className="info-header-icon">📞</span>
                 <h4>National Helpdesk</h4>
               </div>
               <div className="helpline-details">

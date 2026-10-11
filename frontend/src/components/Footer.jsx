@@ -4,102 +4,69 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="gov-classic-footer">
-      <div className="footer-top-ribbon">
-        <div className="footer-container top-ribbon-content">
-          <div className="footer-helpdesk-info">
-            <span className="helpdesk-label">National Citizen Helpline:</span>
-            <strong className="helpdesk-number">1800-115-555 (Toll Free)</strong>
-            <span className="helpdesk-divider">|</span>
-            <span className="helpdesk-label">e-KYC & DBT Support:</span>
-            <strong className="helpdesk-number">14444</strong>
-            <span className="helpdesk-divider">|</span>
-            <span className="helpdesk-email">helpdesk-udyama@gov.in</span>
-          </div>
-          <div className="footer-timings">
-            <span>Working Hours: 09:00 AM - 06:00 PM (Monday to Saturday)</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="footer-main-section">
-        <div className="footer-container footer-grid">
-          {/* Column 1: Portal Details */}
+    <footer className="modern-platform-footer">
+      <div className="footer-container">
+        <div className="footer-modern-grid">
+          {/* Column 1: Platform Brand */}
           <div className="footer-col brand-col">
-            <div className="footer-emblem-badge">
-              <span className="emblem-symbol">U</span>
+            <div className="footer-brand-header">
+              <span className="footer-brand-symbol">UD</span>
+              <span className="footer-brand-title">Udyama</span>
             </div>
-            <h4 className="footer-col-title">UDYAMA</h4>
-            <p className="footer-text">
-              National Semantic Matching & Citizen Verification Portal for Central & State Government Welfare Schemes and Direct Benefit Transfers (DBT).
+            <p className="footer-modern-desc">
+              Next-generation welfare discovery platform. Harnessing semantic search, natural language intent matching, and AI video walkthroughs to make citizen benefits instantly accessible.
             </p>
-            <div className="footer-gov-tag">
-              <span>Government of India • भारत सरकार</span>
+            <div className="platform-stats-chips">
+              <span className="stat-pill-chip">156+ Schemes</span>
+              <span className="stat-pill-chip">22 Indian Languages</span>
+              <span className="stat-pill-chip">100% Free & Open</span>
             </div>
           </div>
 
-          {/* Column 2: Key Scheme Categories */}
+          {/* Column 2: Core Features */}
           <div className="footer-col">
-            <h5 className="footer-col-heading">Key Portals & Categories</h5>
+            <h5 className="footer-col-heading">AI Capabilities</h5>
             <ul className="footer-links-list">
-              <li><a href="#agriculture">Agriculture & Farmer Welfare</a></li>
-              <li><a href="#education">Education & Higher Studies Scholarships</a></li>
-              <li><a href="#health">Healthcare & Medical Assistance</a></li>
-              <li><a href="#business">MSME & Self-Employment Loans</a></li>
-              <li><a href="#social">Social Security, Widow & Old Age Pensions</a></li>
-              <li><a href="#housing">Affordable Rural & Urban Housing</a></li>
+              <li><a href="#schemes">Dual-Window Scheme Explorer</a></li>
+              <li><a href="#nlp">Natural Language Intent Search</a></li>
+              <li><a href="#video">AI Video Guide Generator</a></li>
+              <li><a href="#ekyc">Simulated e-KYC Verification</a></li>
+              <li><a href="#compare">Side-by-Side Scheme Matrix</a></li>
             </ul>
           </div>
 
-          {/* Column 3: Citizen Services */}
+          {/* Column 3: Portals & Ministries */}
           <div className="footer-col">
-            <h5 className="footer-col-heading">Citizen Services</h5>
+            <h5 className="footer-col-heading">Key Domains</h5>
             <ul className="footer-links-list">
-              <li><a href="#ekyc">Aadhaar UIDAI e-KYC Verification</a></li>
-              <li><a href="#pan">PAN Income Tax Assessment</a></li>
-              <li><a href="#dbt">Bank Account DBT Inflow Audit</a></li>
-              <li><a href="#csc">Common Service Center (CSC) Desk</a></li>
-              <li><a href="#grievance">CPGRAMS Public Grievance</a></li>
-              <li><a href="#guidelines">Eligibility Guidelines & Rules</a></li>
+              <li><a href="#agriculture">Agriculture & Farmer Grants</a></li>
+              <li><a href="#education">Education & Scholarships</a></li>
+              <li><a href="#health">Healthcare & Medical Insurance</a></li>
+              <li><a href="#business">MSME & Startup Subsidies</a></li>
+              <li><a href="#housing">Affordable Urban & Rural Housing</a></li>
             </ul>
           </div>
 
-          {/* Column 4: Official Compliance & Policies */}
+          {/* Column 4: Trust & Support */}
           <div className="footer-col">
-            <h5 className="footer-col-heading">Website Policies</h5>
+            <h5 className="footer-col-heading">Support & Trust</h5>
             <ul className="footer-links-list">
-              <li><a href="#privacy">Privacy Policy</a></li>
-              <li><a href="#terms">Terms of Service</a></li>
-              <li><a href="#hyperlink">Hyperlinking Policy</a></li>
-              <li><a href="#copyright">Copyright Policy</a></li>
-              <li><a href="#disclaimer">Legal Disclaimer</a></li>
-              <li><a href="#accessibility">Accessibility Statement</a></li>
+              <li><a href="#helpline">National Helpline (1800-115-555)</a></li>
+              <li><a href="#digilocker">DigiLocker Document Sync</a></li>
+              <li><a href="#privacy">Privacy & Citizen Data Shield</a></li>
+              <li><a href="#terms">Terms & Transparency</a></li>
             </ul>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Copyright & NIC Bar */}
-      <div className="footer-bottom-bar">
-        <div className="footer-container bottom-bar-flex">
-          <div className="bottom-left-info">
-            <p className="nic-attribution">
-              Designed, Developed & Maintained by <strong>National Informatics Centre (NIC)</strong> • Ministry of Electronics and Information Technology, Government of India.
-            </p>
-            <p className="copyright-line">
-              © {currentYear} Udyama National Welfare Portal. All Rights Reserved. Content owned by respective Ministries.
-            </p>
-          </div>
-
-          <div className="bottom-right-stats">
-            <div className="stat-badge">
-              <span className="stat-label">Last Updated:</span>
-              <strong className="stat-value">10-Oct-2026</strong>
-            </div>
-            <div className="stat-badge">
-              <span className="stat-label">Total Visitors:</span>
-              <strong className="stat-value">14,892,401</strong>
-            </div>
+        {/* Modern Bottom Bar */}
+        <div className="footer-modern-bottom-bar">
+          <p className="footer-copy-text">
+            © {currentYear} Udyama. Designed for citizens, entrepreneurs, students, and farmers across India.
+          </p>
+          <div className="footer-status-pill">
+            <span className="status-dot"></span>
+            <span>All AI Matching Services Operational</span>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { INDIAN_LANGUAGES, getTranslation } from '../utils/translations';
 
 export function Header({
@@ -20,246 +20,100 @@ export function Header({
   isHighContrast,
   setIsHighContrast
 }) {
-  const [currentDateTime, setCurrentDateTime] = useState('');
   const t = getTranslation(selectedLanguage);
-
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const options = { 
-        weekday: 'short', 
-        day: '2-digit', 
-        month: 'short', 
-        year: 'numeric',
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit',
-        hour12: true 
-      };
-      setCurrentDateTime(`${now.toLocaleDateString('en-IN', options)} IST`);
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleDecreaseFont = () => {
-    setFontSizeMultiplier(prev => Math.max(0.85, prev - 0.05));
-  };
-
-  const handleResetFont = () => {
-    setFontSizeMultiplier(1.0);
-  };
-
-  const handleIncreaseFont = () => {
-    setFontSizeMultiplier(prev => Math.min(1.25, prev + 0.05));
-  };
-
   const currentLangObj = INDIAN_LANGUAGES.find(l => l.code === selectedLanguage) || INDIAN_LANGUAGES[0];
 
   return (
-    <header className="app-header-classic">
-      {/* Top Accessibility & National Ribbon */}
-      <div className="top-gov-ribbon">
-        <div className="ribbon-container">
-          <div className="gov-title-tag">
-            <span className="gov-hindi-text">{t.govIndia}</span>
-            <span className="gov-divider">|</span>
-            <span className="gov-eng-text">GOVERNMENT OF INDIA</span>
-            <span className="gov-divider">|</span>
-            <span className="gov-portal-tag">{t.portalTitle}</span>
-          </div>
-
-          <div className="ribbon-actions">
-            {/* Live IST Clock */}
-            <div className="ribbon-clock" title="Current Indian Standard Time">
-              <span>{currentDateTime}</span>
-            </div>
-
-            <span className="ribbon-divider">|</span>
-
-            {/* Accessibility: Font Size Controls */}
-            <div className="accessibility-font-controls" aria-label="Text size adjustments">
-              <button 
-                type="button" 
-                className="font-size-btn" 
-                onClick={handleDecreaseFont} 
-                title="Decrease Font Size (A-)"
-              >
-                A-
-              </button>
-              <button 
-                type="button" 
-                className="font-size-btn reset-btn" 
-                onClick={handleResetFont} 
-                title="Default Font Size (A)"
-              >
-                A
-              </button>
-              <button 
-                type="button" 
-                className="font-size-btn" 
-                onClick={handleIncreaseFont} 
-                title="Increase Font Size (A+)"
-              >
-                A+
-              </button>
-            </div>
-
-            <span className="ribbon-divider">|</span>
-
-            {/* High Contrast Toggle */}
-            <button
-              type="button"
-              className={`contrast-toggle-btn ${isHighContrast ? 'active' : ''}`}
-              onClick={() => setIsHighContrast(prev => !prev)}
-              title="Toggle High Contrast Mode"
-            >
-              <span>{isHighContrast ? 'Standard' : 'High Contrast'}</span>
-            </button>
-
-            <span className="ribbon-divider">|</span>
-
-            {/* Language Selection Modal Trigger */}
-            <button
-              type="button"
-              className="ribbon-lang-modal-btn"
-              onClick={onOpenLanguageModal}
-              title="Select from all 22 Indian Regional Languages"
-            >
-              <span className="lang-icon">🌐</span>
-              <span className="lang-active-label">{currentLangObj.nativeName} ({currentLangObj.name})</span>
-              <span className="lang-chevron">▼</span>
-            </button>
-
-            {/* Language Quick Dropdown */}
-            <select 
-              value={selectedLanguage} 
-              onChange={(e) => onChangeLanguage(e.target.value)}
-              className="ribbon-lang-select"
-              aria-label="Quick language selection"
-            >
-              {INDIAN_LANGUAGES.map(lang => (
-                <option key={lang.code} value={lang.code}>
-                  {lang.nativeName} - {lang.name}
-                </option>
-              ))}
-            </select>
+    <header className="minimal-header" aria-label="Portal Navigation">
+      <div className="minimal-header-container">
+        {/* Brand */}
+        <div className="minimal-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <div className="minimal-brand-mark">UD</div>
+          <div className="minimal-brand-info">
+            <span className="minimal-brand-title">Udyama</span>
+            <span className="minimal-brand-tag">National Welfare Portal</span>
           </div>
         </div>
-      </div>
 
-      {/* Main Institutional Header Bar */}
-      <div className="main-header-nav">
-        <div className="header-container">
-          <div className="brand-section">
-            {/* National Emblem Crest */}
-            <div className="classic-emblem-badge" title="National Emblem representation">
-              <div className="emblem-inner">
-                <span className="emblem-crest">UDYAMA</span>
-                <span className="emblem-motto">{t.hindiTagline}</span>
-              </div>
-            </div>
+        {/* Center Nav */}
+        <nav className="minimal-nav">
+          <a href="#schemes-results-anchor" className="minimal-nav-link active">
+            <span>Explore Schemes</span>
+          </a>
 
-            <div className="brand-text-block">
-              <div className="brand-title-row">
-                <h1 className="brand-title-classic">{t.portalTitle}</h1>
-                <span className="brand-hindi-sub">{t.hindiTagline}</span>
-                <span className="portal-type-chip">
-                  {currentUser.role === 'official' ? t.officialDesk : t.citizenSelfService}
-                </span>
-              </div>
-              <p className="brand-subtitle-classic">
-                {t.portalSubtitle} • {t.govIndia}
-              </p>
-            </div>
-          </div>
-
-          <div className="header-actions">
-            {/* Scheme Comparison Button */}
-            {comparedIds.length > 0 && (
-              <button 
-                type="button" 
-                className="classic-nav-btn"
-                onClick={onOpenComparison}
-              >
-                <span>{t.comparisonTray}</span>
-                <span className="classic-badge-count">{comparedIds.length}</span>
-              </button>
+          <button
+            type="button"
+            className={`minimal-nav-link ${showingBookmarksOnly ? 'active' : ''}`}
+            onClick={onOpenBookmarks}
+          >
+            <span>Saved</span>
+            {bookmarkedIds.length > 0 && (
+              <span className="minimal-count-dot">{bookmarkedIds.length}</span>
             )}
+          </button>
 
-            {/* Saved Schemes Button */}
-            <button 
-              type="button" 
-              className={`classic-nav-btn ${showingBookmarksOnly ? 'active' : ''}`}
-              onClick={onOpenBookmarks}
-            >
-              <span>{t.savedSchemes}</span>
-              {bookmarkedIds.length > 0 && (
-                <span className="classic-badge-count">{bookmarkedIds.length}</span>
-              )}
-            </button>
-
-            {/* Portal Switcher & Session Button */}
+          {comparedIds.length > 0 && (
             <button
               type="button"
-              className="classic-primary-btn"
-              onClick={onOpenAuthModal}
+              className="minimal-nav-link active"
+              onClick={onOpenComparison}
             >
-              {currentUser.isLoggedIn 
-                ? (currentUser.role === 'official' ? `Official: ${currentUser.name}` : `Citizen: ${currentUser.name}`)
-                : t.signInSwitch}
+              <span>Compare</span>
+              <span className="minimal-count-dot">{comparedIds.length}</span>
+            </button>
+          )}
+        </nav>
+
+        {/* Right Controls */}
+        <div className="minimal-actions">
+          {/* Language Selector */}
+          <button
+            type="button"
+            className="minimal-pill-btn"
+            onClick={onOpenLanguageModal}
+            title="Select Language"
+          >
+            <span className="lang-code-tag">{currentLangObj.code.toUpperCase()}</span>
+            <span>{currentLangObj.nativeName}</span>
+          </button>
+
+          {/* Accessibility Contrast Toggle */}
+          <button
+            type="button"
+            className={`minimal-icon-btn ${isHighContrast ? 'active' : ''}`}
+            onClick={() => setIsHighContrast(prev => !prev)}
+            title="Toggle High Contrast"
+            aria-label="Toggle Contrast"
+          >
+            <span>◐</span>
+          </button>
+
+          {/* User Profile */}
+          <div className="minimal-user-cluster">
+            <button
+              type="button"
+              className="minimal-user-pill"
+              onClick={onOpenAuthModal}
+              title="Citizen Profile"
+            >
+              <div className="minimal-avatar">
+                {currentUser?.name ? currentUser.name[0].toUpperCase() : 'C'}
+              </div>
+              <span className="minimal-user-name">
+                {currentUser?.name ? currentUser.name.split(' ')[0] : 'Citizen'}
+              </span>
             </button>
 
-            {currentUser.isLoggedIn && (
+            {currentUser?.isLoggedIn && (
               <button
                 type="button"
-                className="classic-logout-btn"
+                className="minimal-signout-btn"
                 onClick={onLogout}
-                title="Logout from session"
+                title="Sign out"
               >
-                {t.logout}
+                Sign out
               </button>
             )}
-          </div>
-        </div>
-      </div>
-
-      {/* Classic Government Portal Navigation Bar */}
-      <nav className="classic-portal-nav-bar" aria-label="Main Navigation">
-        <div className="header-container nav-items-row">
-          <a href="#home" className="nav-item-link active">{t.home}</a>
-          <a href="#schemes" className="nav-item-link" onClick={(e) => { e.preventDefault(); if (showingBookmarksOnly) onOpenBookmarks(); }}>
-            {t.allSchemes}
-          </a>
-          <a href="#ekyc" className="nav-item-link" onClick={(e) => { e.preventDefault(); onOpenAuthModal(); }}>
-            {t.ekycVerification}
-          </a>
-          <a href="#csc-desk" className="nav-item-link" onClick={(e) => { e.preventDefault(); onOpenAuthModal(); }}>
-            {t.cscOperator}
-          </a>
-          <button 
-            type="button"
-            className="nav-item-link lang-nav-item"
-            onClick={onOpenLanguageModal}
-          >
-            🌐 {currentLangObj.nativeName} ({INDIAN_LANGUAGES.length} Languages)
-          </button>
-          <a href="#helpline" className="nav-item-link">
-            {t.helpdesk}
-          </a>
-        </div>
-      </nav>
-
-      {/* Classic News Marquee / Ticker */}
-      <div className="gov-ticker-bar">
-        <div className="ticker-container">
-          <span className="ticker-badge">{t.latestAnnouncement}</span>
-          <div className="ticker-content">
-            <span className="ticker-text">
-              {t.marqueeText}
-            </span>
           </div>
         </div>
       </div>

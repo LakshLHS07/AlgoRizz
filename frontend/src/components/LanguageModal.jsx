@@ -25,7 +25,7 @@ export function LanguageModal({
       <div className="modal-dialog language-picker-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header-classic">
           <div className="lang-modal-title-wrap">
-            <span className="lang-globe-icon">🌐</span>
+            <span className="lang-code-tag">LANG</span>
             <div>
               <h3>Select Portal Language / भाषा चुनें</h3>
               <p className="lang-subtitle">22 Official Scheduled Indian Regional Languages + English</p>

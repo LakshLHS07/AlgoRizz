@@ -5,25 +5,24 @@ export function StatsSection({ totalSchemes, topMatchesCount, highEligibilityCou
   const t = getTranslation(selectedLanguage);
 
   return (
-    <div className="stats-section-classic">
-      <div className="stat-metric-card">
-        <span className="stat-label-text">{t.availableSchemes}</span>
-        <div className="stat-number-val">{totalSchemes}</div>
+    <div className="minimal-stats-ribbon" aria-label="Portal Statistics">
+      <div className="stats-item">
+        <span className="stats-metric">{totalSchemes}</span>
+        <span className="stats-label">{t.availableSchemes || "Total Schemes"}</span>
       </div>
-
-      <div className="stat-metric-card">
-        <span className="stat-label-text">{t.matchedSchemes}</span>
-        <div className="stat-number-val">{topMatchesCount}</div>
+      <div className="stats-divider">·</div>
+      <div className="stats-item highlight">
+        <span className="stats-metric green">{topMatchesCount}</span>
+        <span className="stats-label">{t.matchedSchemes || "Eligible for You"}</span>
       </div>
-
-      <div className="stat-metric-card highlight">
-        <span className="stat-label-text">{t.highEligibility}</span>
-        <div className="stat-number-val" style={{ color: 'var(--gov-green)' }}>{highEligibilityCount}</div>
+      <div className="stats-divider">·</div>
+      <div className="stats-item">
+        <span className="stats-metric blue">{highEligibilityCount}</span>
+        <span className="stats-label">{t.highEligibility || "High Match (80%+)"}</span>
       </div>
-
-      <div className="stat-metric-card">
-        <span className="stat-label-text">{t.dbtFree}</span>
-        <div className="stat-number-val" style={{ color: 'var(--gov-navy)' }}>100% Free</div>
+      <div className="stats-divider">·</div>
+      <div className="stats-item">
+        <span className="stats-badge-free">Direct Benefit Transfer</span>
       </div>
     </div>
   );

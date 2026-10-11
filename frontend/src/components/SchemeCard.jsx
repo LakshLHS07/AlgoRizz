@@ -15,133 +15,89 @@ export function SchemeCard({
   const isHighMatch = scheme.matchScore >= 80;
 
   return (
-    <article className={`classic-scheme-card ${isHighMatch ? 'high-eligibility-card' : ''}`}>
-      {/* Top Ministry Banner */}
-      <div className="card-ministry-banner">
-        <div className="ministry-title-wrap">
-          <span className="ministry-name-text">{scheme.ministry}</span>
+    <article className="minimal-scheme-card">
+      <div className="card-top-row">
+        <div className="card-meta-cluster">
+          <span className="card-ministry-text">{scheme.ministry}</span>
+          <h3 className="card-title-text" onClick={() => onSelect(scheme)}>
+            {scheme.name}
+          </h3>
+          <div className="card-tags-line">
+            <span className="card-category-tag">{scheme.category}</span>
+            <span className="card-benefit-tag">{scheme.benefitAmount}</span>
+          </div>
         </div>
-        <div className="scheme-ref-code">
-          <span>Ref: {scheme.id.toUpperCase()}</span>
+
+        <div className="card-score-cluster">
+          <div className={`card-match-pill ${isHighMatch ? 'high' : 'moderate'}`}>
+            <span className="match-num">{scheme.matchScore}%</span>
+            <span className="match-label">Match</span>
+          </div>
+          {scheme.isEligible && (
+            <span className="card-verified-dot" title="Criteria Verified">Eligible</span>
+          )}
         </div>
       </div>
 
-      <div className="card-inner-padding">
-        {/* Scheme Title & Category Row */}
-        <div className="scheme-title-row">
-          <div className="title-left">
-            <span className="category-tag-pill">{scheme.category}</span>
-            <h3 className="scheme-card-title" onClick={() => onSelect(scheme)}>
-              {scheme.name}
-            </h3>
-          </div>
+      <p className="card-summary-paragraph">
+        {scheme.summary}
+      </p>
 
-          {/* Match Score & Eligibility Stamp */}
-          <div className="stamp-and-status-wrap">
-            <div className={`eligibility-stamp-badge ${isHighMatch ? 'stamp-eligible' : 'stamp-moderate'}`}>
-              <span className="stamp-score">{scheme.matchScore}%</span>
-              <span className="stamp-status">{isHighMatch ? t.eligibleStamp : t.assessedStamp}</span>
-            </div>
-            {scheme.isEligible !== undefined && (
-              <span className={`card-eligibility-pill ${scheme.isEligible ? 'pill-eligible' : 'pill-review'}`}>
-                {scheme.isEligible ? (t.statusEligible || '✓ Eligible') : (t.statusCheckCriteria || '⚠ Review Criteria')}
-              </span>
-            )}
-          </div>
+      <div className="card-meta-footer">
+        <div className="card-target-text">
+          <span>Target: </span>
+          <strong>{scheme.targetAudience || scheme.targetGroup || 'Eligible Citizens'}</strong>
         </div>
 
-        {/* Short Summary Description */}
-        <p className="scheme-summary-text">
-          {scheme.summary}
-        </p>
+        <div className="card-action-cluster">
+          <button
+            type="button"
+            className="minimal-btn-primary"
+            onClick={() => onSelect(scheme)}
+          >
+            {t.viewGuidelines || "View Details"} →
+          </button>
 
-        {/* Key Parameter Table */}
-        <div className="card-key-params-box">
-          <table className="classic-mini-table">
-            <tbody>
-              <tr>
-                <td className="param-label">{t.financialBenefit}</td>
-                <td className="param-value highlight-green"><strong>{scheme.benefitAmount}</strong></td>
-              </tr>
-              <tr>
-                <td className="param-label">{t.targetBeneficiary}</td>
-                <td className="param-value">{scheme.targetAudience || 'Eligible Citizens'}</td>
-              </tr>
-              <tr>
-                <td className="param-label">{t.applicationMode}</td>
-                <td className="param-value">{scheme.applicationMode || 'Online & CSC Counters'}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* Eligibility Verification Notes */}
-        <div className="card-criteria-reasons">
-          {scheme.matchReasons && scheme.matchReasons.slice(0, 2).map((reason, idx) => (
-            <div key={idx} className="criteria-bullet positive">
-              <span className="criteria-bullet-icon">✓</span>
-              <span>{reason}</span>
-            </div>
-          ))}
-          {scheme.warningReasons && scheme.warningReasons.slice(0, 1).map((warn, idx) => (
-            <div key={idx} className="criteria-bullet warning">
-              <span className="criteria-bullet-icon">ℹ</span>
-              <span>{warn}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Card Action Buttons */}
-        <div className="card-bottom-actions">
-          <div className="primary-actions-cluster">
+          {onOpenVideo && (
             <button
               type="button"
-              className="classic-btn-primary"
-              onClick={() => onSelect(scheme)}
-            >
-              {t.viewGuidelines}
-            </button>
-
-            {onOpenVideo && (
-              <button
-                type="button"
-                className="classic-btn-video"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenVideo(scheme);
-                }}
-                title="Watch AI generated video walkthrough and benefits"
-              >
-                <span>AI Video Guide</span>
-              </button>
-            )}
-          </div>
-
-          <div className="secondary-btn-group">
-            <button
-              type="button"
-              className={`classic-btn-secondary ${isCompared ? 'active' : ''}`}
+              className="minimal-btn-icon"
               onClick={(e) => {
                 e.stopPropagation();
-                onToggleCompare(scheme.id);
+                onOpenVideo(scheme);
               }}
-              title={isCompared ? "Remove from comparison tray" : "Compare with other schemes"}
+              title="Watch AI Video Guide"
+              aria-label="AI Video Guide"
             >
-              {isCompared ? t.inTray : t.compare}
+              Video
             </button>
+          )}
 
-            <button
-              type="button"
-              className={`classic-btn-secondary ${isBookmarked ? 'active' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleBookmark(scheme.id);
-              }}
-              title={isBookmarked ? "Remove from saved list" : "Save scheme"}
-            >
-              {isBookmarked ? t.saved : t.save}
-            </button>
-          </div>
+          <button
+            type="button"
+            className={`minimal-btn-icon ${isCompared ? 'active' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleCompare(scheme.id);
+            }}
+            title={isCompared ? "Remove from Compare Tray" : "Compare Scheme"}
+            aria-label="Compare"
+          >
+            {isCompared ? "Compared" : "Compare"}
+          </button>
+
+          <button
+            type="button"
+            className={`minimal-btn-icon ${isBookmarked ? 'active' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleBookmark(scheme.id);
+            }}
+            title={isBookmarked ? "Remove Bookmark" : "Save Scheme"}
+            aria-label="Save"
+          >
+            {isBookmarked ? "Saved" : "Save"}
+          </button>
         </div>
       </div>
     </article>
