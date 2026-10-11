@@ -273,6 +273,7 @@ export function FullScreenAuthPage({
               <div className="auth-title-line">
                 <h1 className="auth-brand-title">UDYAMA (उद्यम)</h1>
               </div>
+              <p className="auth-brand-subtitle">{t.noCitizenLeftBehind || "No Citizen Left Behind"}</p>
             </div>
           </div>
 

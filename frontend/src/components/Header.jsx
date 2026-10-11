@@ -45,6 +45,7 @@ export function Header({
             <div className="brand-title-row">
               <span className="minimal-brand-title">UDYAMA (उद्यम)</span>
             </div>
+            <span className="minimal-brand-tag">{t.noCitizenLeftBehind || "No Citizen Left Behind"}</span>
           </div>
         </div>
 
