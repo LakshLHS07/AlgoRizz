@@ -112,6 +112,13 @@ class BankVerifyRequest(BaseModel):
     accountNumber: str
     ifscCode: str
 
+class MobileSendOtpRequest(BaseModel):
+    phone: str
+
+class MobileVerifyOtpRequest(BaseModel):
+    phone: str
+    otp: str
+
 class AadhaarVerifyResponse(BaseModel):
     success: bool
     verified: bool

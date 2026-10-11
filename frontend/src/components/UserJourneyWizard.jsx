@@ -18,10 +18,10 @@ export function UserJourneyWizard({
   const [currentStep, setCurrentStep] = useState(1);
 
   const steps = [
-    { id: 1, title: "Age Profile", sub: "Age Verification" },
-    { id: 2, title: "Location", sub: "State & Area" },
-    { id: 3, title: "Social Group", sub: "Category & Inclusivity" },
-    { id: 4, title: "Occupation & Income", sub: "Employment & Earnings" }
+    { id: 1, title: t.stepAgeProfile || "Age Profile", sub: t.stepAgeSub || "Age Verification" },
+    { id: 2, title: t.stepLocation || "Location", sub: t.stepLocationSub || "State & Area" },
+    { id: 3, title: t.stepSocialGroup || "Social Group", sub: t.stepSocialGroupSub || "Category & Inclusivity" },
+    { id: 4, title: t.stepOccupationIncome || "Occupation & Income", sub: t.stepOccupationIncomeSub || "Employment & Earnings" }
   ];
 
   const updateProfile = (key, value) => {
@@ -72,19 +72,24 @@ export function UserJourneyWizard({
       {/* Wizard Header */}
       <div className="wizard-top-bar">
         <div className="wizard-title-group">
-          <span className="wizard-step-eyebrow">STEP {currentStep} OF 4 · {steps[currentStep - 1].title.toUpperCase()}</span>
+          <span className="wizard-step-eyebrow">
+            {t.stepEyebrow 
+              ? t.stepEyebrow.replace('{current}', currentStep).replace('{total}', 4).replace('{title}', steps[currentStep - 1].title.toUpperCase())
+              : `${t.stepStatus ? t.stepStatus.replace('{current}', currentStep).replace('{total}', 4) : `STEP ${currentStep} OF 4`} · ${steps[currentStep - 1].title.toUpperCase()}`
+            }
+          </span>
           <h2 className="wizard-heading">
-            {currentStep === 1 && "Age Verification"}
-            {currentStep === 2 && "State & Residential Area"}
-            {currentStep === 3 && "Social Category & Inclusivity"}
-            {currentStep === 4 && "Occupation & Household Income"}
+            {currentStep === 1 && (t.step1Heading || t.stepAgeSub || "Age Verification")}
+            {currentStep === 2 && (t.step2Heading || t.stepLocationSub || "State & Residential Area")}
+            {currentStep === 3 && (t.step3Heading || t.stepSocialGroupSub || "Social Category & Inclusivity")}
+            {currentStep === 4 && (t.step4Heading || t.stepOccupationIncomeSub || "Occupation & Household Income")}
           </h2>
         </div>
 
         <div className="wizard-match-counter">
           <span className="counter-dot"></span>
           <span className="counter-val">{matchedCount}</span>
-          <span className="counter-txt">eligible schemes</span>
+          <span className="counter-txt">{t.eligibleSchemesCount || t.matchedSchemes || "eligible schemes"}</span>
         </div>
       </div>
 
@@ -115,7 +120,7 @@ export function UserJourneyWizard({
           <div className="wizard-step-pane step-age-pane">
             <div className="wizard-question-block">
               <label className="wizard-question-label" htmlFor="minimal-age-input">
-                How old are you? (Citizen Age)
+                {t.howOldAreYou || t.questionAge || "How old are you? (Citizen Age)"}
               </label>
               <div className="wizard-age-input-row">
                 <input
@@ -127,7 +132,7 @@ export function UserJourneyWizard({
                   onChange={(e) => updateProfile('age', Math.max(1, parseInt(e.target.value, 10) || 18))}
                   className="minimal-num-input"
                 />
-                <span className="num-unit">years</span>
+                <span className="num-unit">{t.yearsUnit || t.years || "years"}</span>
 
                 <div className="minimal-chips-row">
                   {[18, 24, 28, 35, 45, 60, 65].map(ageVal => (
@@ -137,7 +142,7 @@ export function UserJourneyWizard({
                       className={`minimal-chip-btn ${profile.age === ageVal ? 'active' : ''}`}
                       onClick={() => updateProfile('age', ageVal)}
                     >
-                      {ageVal} yrs
+                      {ageVal} {t.yrsUnit || "yrs"}
                     </button>
                   ))}
                 </div>
@@ -151,7 +156,7 @@ export function UserJourneyWizard({
           <div className="wizard-step-pane">
             <div className="wizard-question-block">
               <label className="wizard-question-label" htmlFor="minimal-state-select">
-                State or Union Territory
+                {t.stateUt || t.questionState || "State or Union Territory"}
               </label>
               <select
                 id="minimal-state-select"
@@ -180,7 +185,7 @@ export function UserJourneyWizard({
 
             <div className="wizard-question-block" style={{ marginTop: '1.75rem' }}>
               <label className="wizard-question-label">
-                Area of Residence
+                {t.areaOfResidence || "Area of Residence"}
               </label>
               <div className="minimal-pill-grid cols-2">
                 <button
@@ -189,8 +194,8 @@ export function UserJourneyWizard({
                   onClick={() => updateProfile('isRural', true)}
                 >
                   <div className="btn-text-stack">
-                    <span className="btn-main-title">Rural Area</span>
-                    <span className="btn-sub-title">Village or Gram Panchayat</span>
+                    <span className="btn-main-title">{t.ruralArea || "Rural Area"}</span>
+                    <span className="btn-sub-title">{t.ruralAreaSub || "Village or Gram Panchayat"}</span>
                   </div>
                   {profile.isRural && <span className="check-mark">✓</span>}
                 </button>
@@ -201,8 +206,8 @@ export function UserJourneyWizard({
                   onClick={() => updateProfile('isRural', false)}
                 >
                   <div className="btn-text-stack">
-                    <span className="btn-main-title">Urban Area</span>
-                    <span className="btn-sub-title">Town or City Municipality</span>
+                    <span className="btn-main-title">{t.urbanArea || "Urban Area"}</span>
+                    <span className="btn-sub-title">{t.urbanAreaSub || "Town or City Municipality"}</span>
                   </div>
                   {!profile.isRural && <span className="check-mark">✓</span>}
                 </button>
@@ -216,7 +221,7 @@ export function UserJourneyWizard({
           <div className="wizard-step-pane">
             <div className="wizard-question-block">
               <label className="wizard-question-label">
-                Social Category
+                {t.socialCategory || t.questionCategory || "Social Category"}
               </label>
               <div className="minimal-pill-grid cols-5">
                 {SOCIAL_CATEGORIES.filter(c => c !== 'All').map(cat => (
@@ -235,7 +240,7 @@ export function UserJourneyWizard({
 
             <div className="wizard-question-block" style={{ marginTop: '1.75rem' }}>
               <label className="wizard-question-label">
-                Special Inclusivity Criteria
+                {t.specialInclusivity || "Special Inclusivity Criteria"}
               </label>
               <div className="minimal-toggle-row">
                 <label className={`minimal-toggle-box ${profile.isDivyang ? 'active' : ''}`}>
@@ -245,8 +250,8 @@ export function UserJourneyWizard({
                     onChange={(e) => updateProfile('isDivyang', e.target.checked)}
                   />
                   <div className="toggle-box-text">
-                    <strong>Differently Abled (Divyangjan)</strong>
-                    <span>≥40% benchmark disability</span>
+                    <strong>{t.diffAbled || "Differently Abled (Divyangjan)"}</strong>
+                    <span>{t.diffAbledSub || "≥40% benchmark disability"}</span>
                   </div>
                 </label>
 
@@ -257,8 +262,8 @@ export function UserJourneyWizard({
                     onChange={(e) => updateProfile('isMinority', e.target.checked)}
                   />
                   <div className="toggle-box-text">
-                    <strong>Minority Community</strong>
-                    <span>Notified minority background</span>
+                    <strong>{t.minorityCommunity || "Minority Community"}</strong>
+                    <span>{t.minorityCommunitySub || "Notified minority background"}</span>
                   </div>
                 </label>
 
@@ -269,8 +274,8 @@ export function UserJourneyWizard({
                     onChange={(e) => updateProfile('isBPL', e.target.checked)}
                   />
                   <div className="toggle-box-text">
-                    <strong>BPL / Ration Card Holder</strong>
-                    <span>AAY or Priority Household card</span>
+                    <strong>{t.bplRation || "BPL / Ration Card Holder"}</strong>
+                    <span>{t.bplRationSub || "AAY or Priority Household card"}</span>
                   </div>
                 </label>
               </div>
@@ -283,7 +288,7 @@ export function UserJourneyWizard({
           <div className="wizard-step-pane">
             <div className="wizard-question-block">
               <label className="wizard-question-label">
-                Primary Occupation
+                {t.primaryOccupation || t.questionOccupation || "Primary Occupation"}
               </label>
               <div className="minimal-pill-grid cols-3">
                 {occupationsList.map(occ => (
@@ -302,7 +307,7 @@ export function UserJourneyWizard({
 
             <div className="wizard-question-block" style={{ marginTop: '1.75rem' }}>
               <label className="wizard-question-label">
-                Agricultural Landholding
+                {t.agriculturalLandholding || "Agricultural Landholding"}
               </label>
               <div className="minimal-pill-grid cols-2">
                 <button
@@ -311,8 +316,8 @@ export function UserJourneyWizard({
                   onClick={() => updateProfile('hasLand', true)}
                 >
                   <div className="btn-text-stack">
-                    <span className="btn-main-title">Owns Agricultural Land</span>
-                    <span className="btn-sub-title">Qualifies for PM-KISAN, crop insurance & solar pump</span>
+                    <span className="btn-main-title">{t.ownsAgriLand || "Owns Agricultural Land"}</span>
+                    <span className="btn-sub-title">{t.ownsAgriLandSub || "Qualifies for PM-KISAN, crop insurance & solar pump"}</span>
                   </div>
                   {profile.hasLand && <span className="check-mark">✓</span>}
                 </button>
@@ -323,8 +328,8 @@ export function UserJourneyWizard({
                   onClick={() => updateProfile('hasLand', false)}
                 >
                   <div className="btn-text-stack">
-                    <span className="btn-main-title">Landless / Non-Agricultural</span>
-                    <span className="btn-sub-title">Qualifies for rural housing, skill training & labor aid</span>
+                    <span className="btn-main-title">{t.landless || "Landless / Non-Agricultural"}</span>
+                    <span className="btn-sub-title">{t.landlessSub || "Qualifies for rural housing, skill training & labor aid"}</span>
                   </div>
                   {!profile.hasLand && <span className="check-mark">✓</span>}
                 </button>
@@ -334,10 +339,10 @@ export function UserJourneyWizard({
             <div className="wizard-question-block" style={{ marginTop: '1.75rem' }}>
               <div className="income-heading-flex">
                 <label className="wizard-question-label" htmlFor="minimal-income-range">
-                  Annual Household Income
+                  {t.annualHouseholdIncome || t.questionIncome || "Annual Household Income"}
                 </label>
                 <span className="minimal-income-tag">
-                  ₹{(profile.income / 100000).toFixed(2)} Lakhs/year
+                  ₹{(profile.income / 100000).toFixed(2)} {t.lakhsPerYr || "Lakhs/year"}
                 </span>
               </div>
 
@@ -365,7 +370,7 @@ export function UserJourneyWizard({
                 className="minimal-slider"
               />
               <div className="slider-limits">
-                <span>₹0 (Nil)</span>
+                <span>₹0 ({t.nil || "Nil"})</span>
                 <span>₹3.0L</span>
                 <span>₹6.0L</span>
                 <span>₹9.0L</span>
@@ -385,20 +390,25 @@ export function UserJourneyWizard({
               className="minimal-wizard-back-btn"
               onClick={handlePrev}
             >
-              ← Back
+              {t.prevStep || "← Back"}
             </button>
           )}
         </div>
 
         <div className="wizard-footer-right">
-          <span className="wizard-step-status">Step {currentStep} of 4</span>
+          <span className="wizard-step-status">
+            {t.stepStatus 
+              ? t.stepStatus.replace('{current}', currentStep).replace('{total}', 4) 
+              : `Step ${currentStep} of 4`
+            }
+          </span>
           {currentStep < 4 ? (
             <button
               type="button"
               className="minimal-wizard-next-btn"
               onClick={handleNext}
             >
-              Next Step →
+              {t.nextStep || "Next Step →"}
             </button>
           ) : (
             <button
@@ -406,7 +416,10 @@ export function UserJourneyWizard({
               className="minimal-wizard-finish-btn"
               onClick={handleNext}
             >
-              View {matchedCount} Eligible Schemes →
+              {t.viewEligibleSchemesBtn 
+                ? t.viewEligibleSchemesBtn.replace('{count}', matchedCount) 
+                : (t.finishWizard || `View ${matchedCount} Eligible Schemes →`)
+              }
             </button>
           )}
         </div>

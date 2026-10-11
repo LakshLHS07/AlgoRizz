@@ -22,7 +22,7 @@ export function StatsSection({ totalSchemes, topMatchesCount, highEligibilityCou
       </div>
       <div className="stats-divider">·</div>
       <div className="stats-item">
-        <span className="stats-badge-free">Direct Benefit Transfer</span>
+        <span className="stats-badge-free">{t.dbtBadge || "Direct Benefit Transfer"}</span>
       </div>
     </div>
   );

@@ -48,6 +48,27 @@ export async function verifyAadhaarViaDigiLocker(aadhaar) {
     };
   }
 
+  // Check specific seeded fake database for Lakshya Sharma
+  if (clean === "981888699812") {
+    return {
+      success: true,
+      data: {
+        name: "Lakshya Sharma",
+        dob: "1998-07-15",
+        age: 28,
+        gender: "male",
+        state: "Maharashtra",
+        district: "Pune",
+        pincode: "411001",
+        address: "14 Shivaji Road, Pune Rural, Maharashtra - 411001",
+        aadhaarMasked: "XXXXXXXX9812",
+        digilockerUri: "in.gov.uidai-adhr-9812",
+        issuer: "DigiLocker National Identity Repository",
+        status: "DigiLocker Verified"
+      }
+    };
+  }
+
   const lastDigits = parseInt(clean.slice(-2), 10) || 45;
   const isFemale = lastDigits % 2 === 0;
 
@@ -98,8 +119,25 @@ export async function verifyAadhaarOtp(aadhaar, otp) {
     return { success: false, error: "Invalid 12-digit Aadhaar number." };
   }
 
-  if (otp !== "1234" && otp !== "0000" && otp.length !== 4 && otp.length !== 6) {
-    return { success: false, error: "Incorrect OTP. Use 1234 for demo verification." };
+  if (otp !== "482916" && otp !== "1234" && otp !== "0000" && otp.length !== 4 && otp.length !== 6) {
+    return { success: false, error: "Incorrect OTP. Use 482916 or 1234 for demo verification." };
+  }
+
+  if (clean === "981888699812") {
+    return {
+      success: true,
+      data: {
+        name: "Lakshya Sharma",
+        dob: "1998-07-15",
+        age: 28,
+        gender: "male",
+        state: "Maharashtra",
+        district: "Pune",
+        address: "14 Shivaji Road, Pune Rural, Maharashtra - 411001",
+        aadhaarMasked: "XXXXXXXX9812",
+        status: "UIDAI Verified"
+      }
+    };
   }
 
   const lastDigits = parseInt(clean.slice(-2), 10) || 45;
@@ -146,6 +184,21 @@ export async function verifyPanCard(panNumber, registeredName) {
     return { success: false, error: "Invalid PAN format. Standard format: ABCDE1234F" };
   }
 
+  // Check specific seeded fake database for Lakshya Sharma
+  if (cleanPan === "ABCDE9818F") {
+    return {
+      success: true,
+      data: {
+        pan: "ABCDE9818F",
+        name: "Lakshya Sharma",
+        entityType: "Individual Citizen",
+        taxCategory: "Below Basic Exemption Threshold (Eligible for Subsidies)",
+        assessedIncomeLimit: 140000,
+        verificationStatus: "Active & Aadhaar Linked (NSDL Verified)"
+      }
+    };
+  }
+
   const isIndividual = cleanPan.charAt(3) === 'P';
 
   return {
@@ -187,11 +240,128 @@ export async function verifyBankStatement({
       ifsc: cleanIfsc || "SBIN0004521",
       dbtStatus: "Active & Aadhaar-Seeded (NPCI Mapper Verified)",
       avgMonthlyInflow: "₹11,500 / month",
-      assessedAnnualIncome: 138000,
+      assessedAnnualIncome: 140000,
       statementPeriod: "Last 6 Months Analyzed",
       incomeTier: "Low Income / Priority BPL Category",
       statementFileName: statementFileName || "bank_statement_6months.pdf",
       verified: true
+    }
+  };
+}
+
+// Citizen Mobile OTP Dispatch & Verification
+export async function sendMobileOtp(phone) {
+  const digits = (phone || "").replace(/\D/g, "");
+  if (digits.length !== 10) {
+    return { success: false, error: "Please enter a valid 10-digit mobile number." };
+  }
+
+  try {
+    const res = await fetch("/api/kyc/mobile/send-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: digits })
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    console.warn("Backend mobile OTP endpoint unavailable, using simulated dispatcher", err);
+  }
+
+  // Local fallback
+  const otp = digits === "9818886998" ? "482916" : "1234";
+  return {
+    success: true,
+    phone: digits,
+    otp,
+    message: `Demo verification OTP ${otp} has been dispatched to +91 ${digits}.`,
+    expiresInSeconds: 600
+  };
+}
+
+export async function verifyMobileOtp(phone, otp) {
+  const digits = (phone || "").replace(/\D/g, "");
+  const cleanOtp = (otp || "").trim();
+
+  try {
+    const res = await fetch("/api/kyc/mobile/verify-otp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone: digits, otp: cleanOtp })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success) {
+        return { success: true, profile: data.profile };
+      }
+      return { success: false, error: data.message };
+    }
+  } catch (err) {
+    console.warn("Backend verify OTP endpoint unavailable, using simulated verification", err);
+  }
+
+  const expected = digits === "9818886998" ? "482916" : "1234";
+  if (cleanOtp !== expected && cleanOtp !== "1234" && cleanOtp !== "0000") {
+    return { success: false, error: `Invalid OTP. For demo number +91 ${digits}, use OTP: ${expected}` };
+  }
+
+  // Fallback linked profile
+  if (digits === "9818886998") {
+    return {
+      success: true,
+      profile: {
+        role: "citizen",
+        name: "Lakshya Sharma",
+        mobile: "9818886998",
+        age: 28,
+        gender: "male",
+        state: "Maharashtra",
+        district: "Pune",
+        occupation: "farmer",
+        category: "OBC",
+        income: 140000,
+        assessedIncome: 140000,
+        hasLand: true,
+        aadhaar: "XXXXXXXX9812",
+        aadhaarFull: "9818 8869 9812",
+        isAadhaarVerified: true,
+        pan: "ABCDE9818F",
+        isPanVerified: true,
+        bank: {
+          bankName: "State Bank of India (SBI)",
+          accountMasked: "XXXXXX9818",
+          ifsc: "SBIN0004521",
+          dbtStatus: "Active & Aadhaar-Seeded (NPCI Mapper Verified)",
+          assessedAnnualIncome: 140000,
+          avgMonthlyInflow: "₹11,600 / month"
+        },
+        isBankVerified: true,
+        isLoggedIn: true
+      }
+    };
+  }
+
+  return {
+    success: true,
+    profile: {
+      role: "citizen",
+      name: "Citizen Beneficiary",
+      mobile: digits,
+      age: 28,
+      gender: "male",
+      state: "Maharashtra",
+      district: "Pune",
+      occupation: "farmer",
+      income: 140000,
+      assessedIncome: 140000,
+      hasLand: true,
+      aadhaar: "XXXXXXXX0000",
+      isAadhaarVerified: false,
+      pan: null,
+      isPanVerified: false,
+      isBankVerified: false,
+      isLoggedIn: true
     }
   };
 }

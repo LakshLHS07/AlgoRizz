@@ -275,8 +275,8 @@ export function AIVideoGuideModal({
           {currentScene === 3 && (
             <div className="video-scene scene-docs animate-fade-in">
               <div className="scene-header-strip">
-                <span className="scene-badge">DOCUMENT VERIFICATION</span>
-                <h4>Required Documents & Proof Checklist</h4>
+                <span className="scene-badge">{t.documentVerificationTag || "DOCUMENT VERIFICATION"}</span>
+                <h4>{t.requiredDocsChecklist || "Required Documents & Proof Checklist"}</h4>
               </div>
 
               <div className="video-docs-grid">
@@ -288,11 +288,11 @@ export function AIVideoGuideModal({
                   <div key={idx} className="video-doc-card">
                     <div className="doc-card-top">
                       <span className="doc-icon-badge">DOC {idx + 1}</span>
-                      {doc.required && <span className="doc-required-pill">Mandatory</span>}
+                      {doc.required && <span className="doc-required-pill">{t.docMandatory || "Mandatory"}</span>}
                     </div>
                     <strong className="doc-name-heading">{doc.name}</strong>
                     <p className="doc-desc-text">{doc.desc}</p>
-                    <div className="doc-status-verified">Verified via DigiLocker</div>
+                    <div className="doc-status-verified">{t.verifiedViaDigilocker || "Verified via DigiLocker"}</div>
                   </div>
                 ))}
               </div>
@@ -303,14 +303,14 @@ export function AIVideoGuideModal({
           {currentScene === 4 && (
             <div className="video-scene scene-launch animate-fade-in">
               <div className="launch-congrats-card">
-                <div className="launch-icon-celebrate">QUALIFIED</div>
-                <h3 className="launch-title">You Are Ready to Enroll</h3>
+                <div className="launch-icon-celebrate">{t.eligibleStamp || "QUALIFIED"}</div>
+                <h3 className="launch-title">{t.readyToEnrollTitle || "You Are Ready to Enroll"}</h3>
                 <p className="launch-desc">
-                  All criteria have been evaluated. Your profile qualifies for <strong>{scheme.name}</strong>.
+                  {t.readyToEnrollDesc || "All criteria have been evaluated. Your profile qualifies for"} <strong>{scheme.name}</strong>.
                 </p>
 
                 <div className="simulated-tracking-box">
-                  <span className="track-label">Generated Reference Token:</span>
+                  <span className="track-label">{t.generatedRefToken || "Generated Reference Token:"}</span>
                   <span className="track-code">ARZ-ENROLL-{scheme.id.toUpperCase().slice(0, 6)}-{Math.floor(1000 + Math.random() * 9000)}</span>
                 </div>
 
@@ -321,7 +321,7 @@ export function AIVideoGuideModal({
                     rel="noopener noreferrer"
                     className="launch-portal-btn"
                   >
-                    <span>Proceed to Official Registration Portal</span>
+                    <span>{t.proceedToPortal || "Proceed to Official Registration Portal"}</span>
                     <span>→</span>
                   </a>
                   <button
@@ -329,7 +329,7 @@ export function AIVideoGuideModal({
                     className="replay-video-btn"
                     onClick={handleReplay}
                   >
-                    <span>Restart Video Guide</span>
+                    <span>{t.restartVideo || "Restart Video Guide"}</span>
                   </button>
                 </div>
               </div>
@@ -338,7 +338,7 @@ export function AIVideoGuideModal({
 
           {/* Captions Subtitles Bar */}
           <div className="video-subtitles-bar">
-            <span className="subtitles-voice-icon">VOICEOVER</span>
+            <span className="subtitles-voice-icon">{t.voiceoverTag || "VOICEOVER"}</span>
             <p className="subtitles-text">
               {NARRATION_SCRIPTS[currentScene]}
             </p>

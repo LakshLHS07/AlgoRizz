@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { INDIAN_LANGUAGES } from '../utils/translations';
+import { INDIAN_LANGUAGES, getTranslation } from '../utils/translations';
 
 export function LanguageModal({
   isOpen,
@@ -8,6 +8,7 @@ export function LanguageModal({
   onSelectLanguage
 }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const t = getTranslation(selectedLanguage);
 
   if (!isOpen) return null;
 
@@ -27,11 +28,11 @@ export function LanguageModal({
           <div className="lang-modal-title-wrap">
             <span className="lang-code-tag">LANG</span>
             <div>
-              <h3>Select Portal Language / भाषा चुनें</h3>
-              <p className="lang-subtitle">22 Official Scheduled Indian Regional Languages + English</p>
+              <h3>{t.selectLanguageModalTitle || "Select Portal Language / भाषा चुनें"}</h3>
+              <p className="lang-subtitle">{t.scheduledLanguagesSub || "22 Official Scheduled Indian Regional Languages + English"}</p>
             </div>
           </div>
-          <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close">
+          <button type="button" className="modal-close-btn" onClick={onClose} aria-label={t.close || "Close"}>
             ✕
           </button>
         </div>
@@ -42,7 +43,7 @@ export function LanguageModal({
             <input
               type="text"
               className="lang-search-input"
-              placeholder="Search by language name or script (e.g. Marathi, বাংলা, தமிழ்)..."
+              placeholder={t.searchLangPlaceholder || t.searchLanguage || "Search by language name or script (e.g. Marathi, বাংলা, தமிழ்)..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               autoFocus
@@ -79,7 +80,7 @@ export function LanguageModal({
                     </div>
                     <div className="lang-card-meta">
                       <span className="lang-script-badge">{lang.script}</span>
-                      {isSelected && <span className="lang-check-icon">✓ Active</span>}
+                      {isSelected && <span className="lang-check-icon">{t.activeLang || "✓ Active"}</span>}
                     </div>
                   </button>
                 );
@@ -88,7 +89,7 @@ export function LanguageModal({
 
             {filteredLanguages.length === 0 && (
               <div className="no-lang-found">
-                <p>No language found matching "{searchQuery}".</p>
+                <p>{t.noLangFound || "No language found matching"} "{searchQuery}".</p>
               </div>
             )}
           </div>
@@ -96,10 +97,10 @@ export function LanguageModal({
 
         <div className="modal-footer-classic">
           <span className="lang-footer-hint">
-            Directly translates all headers, search tools, filters, eligibility metrics, and receipt dockets.
+            {t.langFooterHint || "Directly translates all headers, search tools, filters, eligibility metrics, and receipt dockets."}
           </span>
           <button type="button" className="secondary-action-button" onClick={onClose}>
-            Close
+            {t.close || "Close"}
           </button>
         </div>
       </div>

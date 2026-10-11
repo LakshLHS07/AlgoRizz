@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
 import { INDIAN_STATES, OCCUPATIONS } from '../data/schemesData';
+import { 
+  getTranslation, 
+  translateOccupation, 
+  translateGender, 
+  translateSocialCategory 
+} from '../utils/translations';
 
 export function OfficialDashboard({
   currentUser,
   onPerformIntakeMatch,
   intakeRecords,
-  onViewRecordReceipt
+  onViewRecordReceipt,
+  selectedLanguage = 'en'
 }) {
+  const t = getTranslation(selectedLanguage);
   const [citizenName, setCitizenName] = useState('');
   const [citizenMobile, setCitizenMobile] = useState('');
   const [citizenAadhaar, setCitizenAadhaar] = useState('');
@@ -55,14 +63,14 @@ export function OfficialDashboard({
       <div className="official-header-banner">
         <div className="official-info-row">
           <div>
-            <span className="official-role-tag">Government & CSC Field Terminal</span>
+            <span className="official-role-tag">{t.fieldTerminalTitle || "Government & CSC Field Terminal"}</span>
             <h2 className="official-heading">{currentUser.name}</h2>
             <div className="official-meta">
               <span>ID: {currentUser.officerId}</span>
               <span>•</span>
               <span>{currentUser.department}</span>
               <span>•</span>
-              <span>Jurisdiction: {currentUser.district}</span>
+              <span>{t.jurisdiction || "Jurisdiction:"} {currentUser.district}</span>
             </div>
           </div>
           <div className="official-tabs">
@@ -71,14 +79,14 @@ export function OfficialDashboard({
               className={`official-tab-btn ${activeTab === 'intake' ? 'active' : ''}`}
               onClick={() => setActiveTab('intake')}
             >
-              New Citizen Intake
+              {t.newCitizenIntake || "New Citizen Intake"}
             </button>
             <button
               type="button"
               className={`official-tab-btn ${activeTab === 'registry' ? 'active' : ''}`}
               onClick={() => setActiveTab('registry')}
             >
-              Citizen Registry ({intakeRecords.length})
+              {t.citizenRegistry || "Citizen Registry"} ({intakeRecords.length})
             </button>
           </div>
         </div>
@@ -87,19 +95,19 @@ export function OfficialDashboard({
       {activeTab === 'intake' ? (
         <div className="intake-form-card">
           <div className="intake-form-header">
-            <h3>Assisted Citizen Enrollment</h3>
-            <p>Enter citizen profile and demographic parameters to match with eligible welfare schemes and generate an official receipt.</p>
+            <h3>{t.assistedEnrollmentTitle || "Assisted Citizen Enrollment"}</h3>
+            <p>{t.assistedEnrollmentDesc || "Enter citizen profile and demographic parameters to match with eligible welfare schemes and generate an official receipt."}</p>
           </div>
 
           <form onSubmit={handleSubmitIntake} className="intake-form-body">
             <div className="form-grid-2col">
               <div className="form-field-group">
-                <label htmlFor="intake-name">Citizen Full Name *</label>
+                <label htmlFor="intake-name">{t.citizenFullName || "Citizen Full Name *"}</label>
                 <input
                   id="intake-name"
                   type="text"
                   className="portal-input"
-                  placeholder="Citizen full legal name"
+                  placeholder={t.citizenFullNamePlaceholder || "Citizen full legal name"}
                   value={citizenName}
                   onChange={(e) => setCitizenName(e.target.value)}
                   required
@@ -107,13 +115,13 @@ export function OfficialDashboard({
               </div>
 
               <div className="form-field-group">
-                <label htmlFor="intake-mobile">Citizen Contact Number</label>
+                <label htmlFor="intake-mobile">{t.contactNumber || "Citizen Contact Number"}</label>
                 <input
                   id="intake-mobile"
                   type="tel"
                   maxLength="10"
                   className="portal-input"
-                  placeholder="10-digit mobile number"
+                  placeholder={t.mobilePlaceholder || "10-digit mobile number"}
                   value={citizenMobile}
                   onChange={(e) => setCitizenMobile(e.target.value)}
                 />
@@ -122,7 +130,7 @@ export function OfficialDashboard({
 
             <div className="form-grid-3col">
               <div className="form-field-group">
-                <label htmlFor="intake-aadhaar">Aadhaar (Last 4 Digits)</label>
+                <label htmlFor="intake-aadhaar">{t.aadhaarLast4 || "Aadhaar (Last 4 Digits)"}</label>
                 <input
                   id="intake-aadhaar"
                   type="text"
@@ -135,7 +143,7 @@ export function OfficialDashboard({
               </div>
 
               <div className="form-field-group">
-                <label htmlFor="intake-age">Age (Years)</label>
+                <label htmlFor="intake-age">{t.ageYears || "Age (Years)"}</label>
                 <input
                   id="intake-age"
                   type="number"
@@ -149,23 +157,23 @@ export function OfficialDashboard({
               </div>
 
               <div className="form-field-group">
-                <label htmlFor="intake-gender">Gender</label>
+                <label htmlFor="intake-gender">{t.gender || "Gender"}</label>
                 <select
                   id="intake-gender"
                   className="portal-input"
                   value={gender}
                   onChange={(e) => setGender(e.target.value)}
                 >
-                  <option value="female">Female</option>
-                  <option value="male">Male</option>
-                  <option value="other">Other</option>
+                  <option value="female">{t.female || "Female"}</option>
+                  <option value="male">{t.male || "Male"}</option>
+                  <option value="other">{t.other || "Other"}</option>
                 </select>
               </div>
             </div>
 
             <div className="form-grid-3col">
               <div className="form-field-group">
-                <label htmlFor="intake-state">State / UT</label>
+                <label htmlFor="intake-state">{t.stateUt || "State / UT"}</label>
                 <select
                   id="intake-state"
                   className="portal-input"
@@ -179,23 +187,23 @@ export function OfficialDashboard({
               </div>
 
               <div className="form-field-group">
-                <label htmlFor="intake-category">Social Category</label>
+                <label htmlFor="intake-category">{t.socialCategory || "Social Category"}</label>
                 <select
                   id="intake-category"
                   className="portal-input"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                 >
-                  <option value="General">General</option>
-                  <option value="OBC">OBC</option>
-                  <option value="SC">SC</option>
-                  <option value="ST">ST</option>
-                  <option value="EWS">EWS</option>
+                  <option value="General">{translateSocialCategory("General", selectedLanguage)}</option>
+                  <option value="OBC">{translateSocialCategory("OBC", selectedLanguage)}</option>
+                  <option value="SC">{translateSocialCategory("SC", selectedLanguage)}</option>
+                  <option value="ST">{translateSocialCategory("ST", selectedLanguage)}</option>
+                  <option value="EWS">{translateSocialCategory("EWS", selectedLanguage)}</option>
                 </select>
               </div>
 
               <div className="form-field-group">
-                <label htmlFor="intake-occ">Primary Occupation</label>
+                <label htmlFor="intake-occ">{t.primaryOccupation || "Primary Occupation"}</label>
                 <select
                   id="intake-occ"
                   className="portal-input"
@@ -204,7 +212,7 @@ export function OfficialDashboard({
                 >
                   {OCCUPATIONS.map(occ => (
                     <option key={occ} value={occ}>
-                      {occ === "All Occupations" ? "All Occupations" : occ.toUpperCase()}
+                      {translateOccupation(occ, selectedLanguage)}
                     </option>
                   ))}
                 </select>
@@ -213,7 +221,7 @@ export function OfficialDashboard({
 
             <div className="form-grid-2col">
               <div className="form-field-group">
-                <label htmlFor="intake-income">Annual Family Income (in INR)</label>
+                <label htmlFor="intake-income">{t.annualIncome || "Annual Family Income (in INR)"}</label>
                 <input
                   id="intake-income"
                   type="number"
@@ -232,18 +240,18 @@ export function OfficialDashboard({
                     checked={hasLand}
                     onChange={(e) => setHasLand(e.target.checked)}
                   />
-                  <span>Possesses Cultivable Land Records</span>
+                  <span>{t.possessesLand || "Possesses Cultivable Land Records"}</span>
                 </label>
               </div>
             </div>
 
             <div className="form-field-group">
-              <label htmlFor="intake-notes">Field Officer Remarks (Optional)</label>
+              <label htmlFor="intake-notes">{t.fieldOfficerRemarks || "Field Officer Remarks (Optional)"}</label>
               <input
                 id="intake-notes"
                 type="text"
                 className="portal-input"
-                placeholder="e.g. Applicant needs immediate crop loss support; documents verified."
+                placeholder={t.fieldOfficerRemarksPlaceholder || "e.g. Applicant needs immediate crop loss support; documents verified."}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />
@@ -251,7 +259,7 @@ export function OfficialDashboard({
 
             <div className="intake-form-actions">
               <button type="submit" className="primary-action-button">
-                Process Citizen Intake and Match Schemes
+                {t.processIntakeBtn || "Process Citizen Intake and Match Schemes"}
               </button>
             </div>
           </form>
@@ -259,27 +267,27 @@ export function OfficialDashboard({
       ) : (
         <div className="registry-card">
           <div className="intake-form-header">
-            <h3>Registered Beneficiary Log</h3>
-            <p>List of citizens processed by this terminal.</p>
+            <h3>{t.registeredBeneficiaryLog || "Registered Beneficiary Log"}</h3>
+            <p>{t.registeredBeneficiaryDesc || "List of citizens processed by this terminal."}</p>
           </div>
 
           {intakeRecords.length === 0 ? (
             <div className="empty-results-box">
-              <h4 className="empty-title">No Intake Records Yet</h4>
-              <p className="empty-desc">Process a citizen intake using the form above to log their application.</p>
+              <h4 className="empty-title">{t.noIntakeRecords || "No Intake Records Yet"}</h4>
+              <p className="empty-desc">{t.noIntakeRecordsDesc || "Process a citizen intake using the form above to log their application."}</p>
             </div>
           ) : (
             <div className="criteria-table-wrap">
               <table className="criteria-table">
                 <thead>
                   <tr>
-                    <th>Intake ID</th>
-                    <th>Citizen Name</th>
-                    <th>Mobile</th>
-                    <th>State / Occupation</th>
-                    <th>Annual Income</th>
-                    <th>Date Logged</th>
-                    <th>Actions</th>
+                    <th>{t.thIntakeId || "Intake ID"}</th>
+                    <th>{t.thCitizenName || "Citizen Name"}</th>
+                    <th>{t.thMobile || "Mobile"}</th>
+                    <th>{t.thStateOcc || "State / Occupation"}</th>
+                    <th>{t.thAnnualIncome || "Annual Income"}</th>
+                    <th>{t.thDateLogged || "Date Logged"}</th>
+                    <th>{t.thActions || "Actions"}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -288,7 +296,7 @@ export function OfficialDashboard({
                       <td><strong>{rec.id}</strong></td>
                       <td>{rec.name}</td>
                       <td>{rec.mobile}</td>
-                      <td>{rec.state} ({rec.occupation})</td>
+                      <td>{rec.state} ({translateOccupation(rec.occupation, selectedLanguage)})</td>
                       <td>₹{(rec.income / 100000).toFixed(2)}L</td>
                       <td>{rec.timestamp}</td>
                       <td>
@@ -297,7 +305,7 @@ export function OfficialDashboard({
                           className="action-btn"
                           onClick={() => onViewRecordReceipt(rec)}
                         >
-                          View Docket
+                          {t.viewDocket || "View Docket"}
                         </button>
                       </td>
                     </tr>

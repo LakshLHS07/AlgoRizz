@@ -44,16 +44,14 @@ export function Header({
           <div className="minimal-brand-info">
             <div className="brand-title-row">
               <span className="minimal-brand-title">UDYAMA (उद्यम)</span>
-              <span className="gov-india-badge">Government of India</span>
             </div>
-            <span className="minimal-brand-tag">National Portal for Citizen Welfare Schemes</span>
           </div>
         </div>
 
         {/* Center Nav */}
         <nav className="minimal-nav">
           <a href="#schemes-results-anchor" className="minimal-nav-link active">
-            <span>Explore Schemes</span>
+            <span>{t.exploreSchemesNav || "Explore Schemes"}</span>
           </a>
 
           <button
@@ -61,7 +59,7 @@ export function Header({
             className={`minimal-nav-link ${showingBookmarksOnly ? 'active' : ''}`}
             onClick={onOpenBookmarks}
           >
-            <span>Saved</span>
+            <span>{t.savedNav || "Saved"}</span>
             {bookmarkedIds.length > 0 && (
               <span className="minimal-count-dot">{bookmarkedIds.length}</span>
             )}
@@ -73,7 +71,7 @@ export function Header({
               className="minimal-nav-link active"
               onClick={onOpenComparison}
             >
-              <span>Compare</span>
+              <span>{t.compareNav || "Compare"}</span>
               <span className="minimal-count-dot">{comparedIds.length}</span>
             </button>
           )}
@@ -86,9 +84,9 @@ export function Header({
             type="button"
             className="header-official-counter-btn"
             onClick={onOpenAuthModal}
-            title="Switch to CSC Official / Authorized Operator Desk"
+            title={t.cscCounterNav || "Switch to CSC Official / Authorized Operator Desk"}
           >
-            <span>CSC Official Counter →</span>
+            <span>{t.cscCounterNav || "CSC Official Counter →"}</span>
           </button>
 
           {/* Language Selector */}
@@ -96,7 +94,7 @@ export function Header({
             type="button"
             className="minimal-pill-btn"
             onClick={onOpenLanguageModal}
-            title="Select Language"
+            title={t.selectLanguageModalTitle || "Select Language"}
           >
             <span className="lang-code-tag">{currentLangObj.code.toUpperCase()}</span>
             <span>{currentLangObj.nativeName}</span>
@@ -107,7 +105,7 @@ export function Header({
             type="button"
             className={`minimal-icon-btn ${isHighContrast ? 'active' : ''}`}
             onClick={() => setIsHighContrast(prev => !prev)}
-            title="Toggle High Contrast"
+            title={t.contrastToggle || "Toggle High Contrast"}
             aria-label="Toggle Contrast"
           >
             <span>◐</span>
@@ -119,13 +117,13 @@ export function Header({
               type="button"
               className="minimal-user-pill"
               onClick={onOpenAuthModal}
-              title="Citizen Profile"
+              title={t.citizenRole || "Citizen Profile"}
             >
               <div className="minimal-avatar">
                 {currentUser?.name ? currentUser.name[0].toUpperCase() : 'C'}
               </div>
               <span className="minimal-user-name">
-                {currentUser?.name ? currentUser.name.split(' ')[0] : 'Citizen'}
+                {currentUser?.name ? currentUser.name.split(' ')[0] : (t.citizenRole || 'Citizen')}
               </span>
             </button>
 
@@ -134,9 +132,9 @@ export function Header({
                 type="button"
                 className="minimal-signout-btn"
                 onClick={onLogout}
-                title="Sign out"
+                title={t.signOut || "Sign out"}
               >
-                Sign out
+                {t.signOut || "Sign out"}
               </button>
             )}
           </div>

@@ -288,7 +288,7 @@ export function SchemeModal({
                 onClick={() => onOpenVideo(rawScheme)}
                 title="Watch AI enrollment and benefits video guide"
               >
-                <span>▶ AI Enrollment Video</span>
+                <span>▶ {t.watchAiVideo || "AI Enrollment Video"}</span>
               </button>
             )}
           </div>

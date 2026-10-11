@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   validateAadhaarFormat, 
   validatePanFormat, 
@@ -6,10 +6,13 @@ import {
   verifyAadhaarViaDigiLocker, 
   verifyPanCard, 
   verifyBankStatement,
+  sendMobileOtp,
+  verifyMobileOtp,
   MAJOR_BANKS 
 } from '../utils/kycVerification';
 
 import { INDIAN_LANGUAGES, getTranslation } from '../utils/translations';
+import { translateDOM } from '../utils/domTranslator';
 
 export function FullScreenAuthPage({ 
   onLogin, 
@@ -21,6 +24,13 @@ export function FullScreenAuthPage({
 }) {
   const t = getTranslation(selectedLanguage);
   const currentLangObj = INDIAN_LANGUAGES.find(l => l.code === selectedLanguage) || INDIAN_LANGUAGES[0];
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      translateDOM(document.body, selectedLanguage);
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [selectedLanguage]);
   const [selectedRole, setSelectedRole] = useState(initialRole);
   const [citizenVerificationMode, setCitizenVerificationMode] = useState('kyc'); // 'kyc' | 'mobile'
 
@@ -45,11 +55,15 @@ export function FullScreenAuthPage({
   const [isVerifyingBank, setIsVerifyingBank] = useState(false);
   const [bankError, setBankError] = useState('');
 
-  // Citizen Quick Mobile State
-  const [citizenName, setCitizenName] = useState('');
-  const [citizenMobile, setCitizenMobile] = useState('');
+  // Citizen Quick Mobile State (Pre-seeded with demo citizen 9818886998)
+  const [citizenName, setCitizenName] = useState('Lakshya Sharma');
+  const [citizenMobile, setCitizenMobile] = useState('9818886998');
   const [mobileOtpSent, setMobileOtpSent] = useState(false);
   const [mobileOtp, setMobileOtp] = useState('');
+  const [dispatchedSmsAlert, setDispatchedSmsAlert] = useState(null);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [mobileError, setMobileError] = useState('');
 
   // Official CSC Login State
   const [officerName, setOfficerName] = useState('');
@@ -173,25 +187,46 @@ export function FullScreenAuthPage({
     });
   };
 
-  const handleMobileSubmit = (e) => {
+  const handleMobileSubmit = async (e) => {
     e.preventDefault();
+    setMobileError('');
+
     if (!mobileOtpSent) {
-      if (!citizenMobile || citizenMobile.length < 10) {
-        alert("Please enter a valid 10-digit mobile number.");
+      const digits = citizenMobile.replace(/\D/g, '');
+      if (digits.length !== 10) {
+        setMobileError("Please enter a valid 10-digit mobile number.");
         return;
       }
-      setMobileOtpSent(true);
+      setIsSendingOtp(true);
+      const res = await sendMobileOtp(digits);
+      setIsSendingOtp(false);
+
+      if (res.success) {
+        setMobileOtpSent(true);
+        const code = res.otp || (digits === "9818886998" ? "482916" : "1234");
+        setDispatchedSmsAlert({
+          sender: "VK-GOVOTP",
+          phone: digits,
+          otp: code,
+          message: `Your UDYAMA Portal authentication OTP is ${code}. Valid for 10 mins. Do not share.`
+        });
+      } else {
+        setMobileError(res.error || "Failed to dispatch OTP. Please try again.");
+      }
     } else {
-      onLogin({
-        role: 'citizen',
-        name: citizenName || 'Citizen Applicant',
-        mobile: citizenMobile,
-        aadhaar: 'Unverified',
-        isAadhaarVerified: false,
-        isPanVerified: false,
-        isBankVerified: false,
-        isLoggedIn: true
-      });
+      if (!mobileOtp) {
+        setMobileError("Please enter the OTP received via SMS.");
+        return;
+      }
+      setIsVerifyingOtp(true);
+      const res = await verifyMobileOtp(citizenMobile, mobileOtp);
+      setIsVerifyingOtp(false);
+
+      if (res.success && res.profile) {
+        onLogin(res.profile);
+      } else {
+        setMobileError(res.error || "Invalid OTP. Please check the simulated SMS alert.");
+      }
     }
   };
 
@@ -237,11 +272,7 @@ export function FullScreenAuthPage({
             <div>
               <div className="auth-title-line">
                 <h1 className="auth-brand-title">UDYAMA (उद्यम)</h1>
-                <span className="gov-india-badge">Government of India</span>
               </div>
-              <p className="auth-brand-subtitle">
-                National Portal for Citizen Welfare Schemes, e-KYC Verification & Assisted CSC Intake
-              </p>
             </div>
           </div>
 
@@ -263,7 +294,7 @@ export function FullScreenAuthPage({
               className="guest-skip-btn classic-outline-btn"
               onClick={onGuestAccess}
             >
-              Explore Welfare Directory as Guest →
+              {t.exploreGuest || "Explore Welfare Directory as Guest →"}
             </button>
           </div>
         </div>
@@ -276,44 +307,44 @@ export function FullScreenAuthPage({
           <aside className="auth-sidebar-info">
             <div className="classic-info-box">
               <div className="info-box-header">
-                <h4>Official Notice & Disclaimer</h4>
+                <h4>{t.citizenGuidelines || "Official Notice & Disclaimer"}</h4>
               </div>
               <p className="info-box-text">
-                This is the official Government of India welfare scheme discovery and automated eligibility platform. All citizens are entitled to free scheme matching without agent commissions.
+                {t.guidelineIntro || "This is the official welfare scheme discovery and automated eligibility platform. All citizens are entitled to free scheme matching without agent commissions."}
               </p>
               <div className="it-act-banner">
-                <span>Security Notice: Unauthorized access or data tampering is punishable under Sections 43 & 66 of the Information Technology Act 2000.</span>
+                <span>{t.itActNotice || "Security Notice: Unauthorized access or data tampering is punishable under Information Technology Act."}</span>
               </div>
             </div>
 
             <div className="classic-info-box">
               <div className="info-box-header">
-                <h4>Mandatory e-KYC Documents</h4>
+                <h4>{t.whyVerify || "Mandatory e-KYC Documents"}</h4>
               </div>
               <ul className="info-steps-list">
                 <li>
-                  <strong>1. Aadhaar Card (UIDAI):</strong>
-                  <span>Auto-validates age, legal name, gender, and residential state.</span>
+                  <strong>{t.step1Title || "1. Aadhaar Card (UIDAI):"}</strong>
+                  <span>{t.step1Desc || "Auto-validates age, legal name, gender, and residential state."}</span>
                 </li>
                 <li>
-                  <strong>2. PAN Card (ITD):</strong>
-                  <span>Verifies income tax assessment bracket & low-income non-taxpayer status.</span>
+                  <strong>{t.step2Title || "2. PAN Card (ITD):"}</strong>
+                  <span>{t.step2Desc || "Verifies income tax assessment bracket & low-income non-taxpayer status."}</span>
                 </li>
                 <li>
-                  <strong>3. Bank Statement & Account:</strong>
-                  <span>Validates DBT transfer NPCI linkage and audited annual cash inflow.</span>
+                  <strong>{t.step3Title || "3. Bank Statement & Account:"}</strong>
+                  <span>{t.step3Desc || "Validates DBT transfer NPCI linkage and audited annual cash inflow."}</span>
                 </li>
               </ul>
             </div>
 
             <div className="classic-info-box helpline-box">
               <div className="info-box-header">
-                <h4>National Helpdesk</h4>
+                <h4>{t.helpdeskTitle || "National Helpdesk"}</h4>
               </div>
               <div className="helpline-details">
-                <div>Toll Free: <strong>1800-115-555</strong></div>
-                <div>e-KYC Support: <strong>14444</strong></div>
-                <div>Email: <strong>helpdesk-udyama@gov.in</strong></div>
+                <div>{t.tollFreeLabel || "Toll Free:"} <strong>1800-115-555</strong></div>
+                <div>{t.ekycSupportLabel || "e-KYC Support:"} <strong>14444</strong></div>
+                <div>{t.emailLabel || "Email:"} <strong>helpdesk-udyama@gov.in</strong></div>
               </div>
             </div>
           </aside>
@@ -329,8 +360,8 @@ export function FullScreenAuthPage({
                 className={`portal-tab ${selectedRole === 'citizen' ? 'active' : ''}`}
                 onClick={() => setSelectedRole('citizen')}
               >
-                <span className="tab-title">Citizen Self-Service (e-KYC)</span>
-                <span className="tab-subtitle">For Individual Applicants</span>
+                <span className="tab-title">{t.citizenTab || "Citizen Self-Service (e-KYC)"}</span>
+                <span className="tab-subtitle">{t.citizenTabSub || "For Individual Applicants"}</span>
               </button>
 
               <button 
@@ -340,8 +371,8 @@ export function FullScreenAuthPage({
                 className={`portal-tab ${selectedRole === 'official' ? 'active' : ''}`}
                 onClick={() => setSelectedRole('official')}
               >
-                <span className="tab-title">CSC / Official Desk</span>
-                <span className="tab-subtitle">For Authorized Field Agents</span>
+                <span className="tab-title">{t.cscTab || "CSC / Official Desk"}</span>
+                <span className="tab-subtitle">{t.cscTabSub || "For Authorized Field Agents"}</span>
               </button>
             </div>
 
@@ -350,8 +381,8 @@ export function FullScreenAuthPage({
               {selectedRole === 'citizen' ? (
                 <div className="citizen-auth-content">
                   <div className="form-sub-header">
-                    <h3>Citizen Identity & e-KYC Verification</h3>
-                    <p>Complete 3-step verification to automatically seed your verified profile into scheme matching algorithms.</p>
+                    <h3>{t.citizenHeaderTitle || "Citizen Identity & e-KYC Verification"}</h3>
+                    <p>{t.citizenHeaderDesc || "Complete 3-step verification to automatically seed your verified profile into scheme matching algorithms."}</p>
                   </div>
 
                   {/* Mode Selector */}
@@ -361,14 +392,14 @@ export function FullScreenAuthPage({
                       className={`sub-mode-btn ${citizenVerificationMode === 'kyc' ? 'active' : ''}`}
                       onClick={() => setCitizenVerificationMode('kyc')}
                     >
-                      Aadhaar, PAN & Bank Statement e-KYC (Recommended)
+                      {t.kycModeBtn || "Aadhaar, PAN & Bank Statement e-KYC (Recommended)"}
                     </button>
                     <button
                       type="button"
                       className={`sub-mode-btn ${citizenVerificationMode === 'mobile' ? 'active' : ''}`}
                       onClick={() => setCitizenVerificationMode('mobile')}
                     >
-                      Quick Mobile OTP Sign-In
+                      {t.mobileModeBtn || "Quick Mobile OTP Sign-In"}
                     </button>
                   </div>
 
@@ -378,14 +409,14 @@ export function FullScreenAuthPage({
                       <fieldset className={`kyc-fieldset ${aadhaarVerifiedData ? 'completed' : 'active'}`}>
                         <legend className="kyc-legend">
                           <span className="legend-num">1</span>
-                          <span>Aadhaar DigiLocker Verification</span>
-                          {aadhaarVerifiedData && <span className="verified-tag">DIGILOCKER VERIFIED</span>}
+                          <span>{t.step1AadhaarLegend || "Aadhaar DigiLocker Verification"}</span>
+                          {aadhaarVerifiedData && <span className="verified-tag">{t.digilockerVerifiedBadge || "DIGILOCKER VERIFIED"}</span>}
                         </legend>
 
                         {!aadhaarVerifiedData ? (
                           <div className="fieldset-content">
                             <div className="form-field-group">
-                              <label htmlFor="aadhaar-input-box">Enter 12-Digit Aadhaar Number *</label>
+                              <label htmlFor="aadhaar-input-box">{t.enter12DigitAadhaar || "Enter 12-Digit Aadhaar Number *"}</label>
                               <div className="input-with-button-row">
                                 <input
                                   id="aadhaar-input-box"
@@ -402,11 +433,24 @@ export function FullScreenAuthPage({
                                   onClick={handleVerifyAadhaarDigiLocker}
                                   disabled={isVerifyingAadhaar}
                                 >
-                                  {isVerifyingAadhaar ? "Connecting DigiLocker..." : "Verify via DigiLocker"}
+                                  {isVerifyingAadhaar ? (t.connectingDigilocker || "Connecting DigiLocker...") : (t.verifyDigilockerBtn || "Verify via DigiLocker")}
+                                </button>
+                              </div>
+                              <div className="demo-chip-row">
+                                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{t.demoAadhaarLabel || "Demo Aadhaar:"}</span>
+                                <button
+                                  type="button"
+                                  className="demo-chip-btn"
+                                  onClick={() => {
+                                    setAadhaarInput("9818 8869 9812");
+                                    setAadhaarError("");
+                                  }}
+                                >
+                                  {t.useDemoAadhaar || "Use 9818 8869 9812 (Lakshya Sharma)"}
                                 </button>
                               </div>
                               <span className="field-hint-text">
-                                Verified directly via DigiLocker National Identity Repository. No SMS OTP required on webpage.
+                                {t.digilockerHint || "Verified directly via DigiLocker National Identity Repository. No SMS OTP required on webpage."}
                               </span>
                             </div>
 
@@ -419,25 +463,25 @@ export function FullScreenAuthPage({
                             <table className="classic-data-table">
                               <tbody>
                                 <tr>
-                                  <td className="table-label">Full Name:</td>
+                                  <td className="table-label">{t.fullNameLabel || "Full Name:"}</td>
                                   <td className="table-value"><strong>{aadhaarVerifiedData.name}</strong></td>
-                                  <td className="table-label">Age & DOB:</td>
-                                  <td className="table-value">{aadhaarVerifiedData.age} Years ({aadhaarVerifiedData.dob})</td>
+                                  <td className="table-label">{t.ageDobLabel || "Age & DOB:"}</td>
+                                  <td className="table-value">{aadhaarVerifiedData.age} {t.years || "Years"} ({aadhaarVerifiedData.dob})</td>
                                 </tr>
                                 <tr>
-                                  <td className="table-label">Aadhaar Reference:</td>
+                                  <td className="table-label">{t.aadhaarRefLabel || "Aadhaar Reference:"}</td>
                                   <td className="table-value">{aadhaarVerifiedData.aadhaarMasked}</td>
-                                  <td className="table-label">Residential State:</td>
+                                  <td className="table-label">{t.residentialStateLabel || "Residential State:"}</td>
                                   <td className="table-value">{aadhaarVerifiedData.state} ({aadhaarVerifiedData.district})</td>
                                 </tr>
                                 <tr>
-                                  <td className="table-label">DigiLocker Doc URI:</td>
+                                  <td className="table-label">{t.digilockerDocUriLabel || "DigiLocker Doc URI:"}</td>
                                   <td className="table-value" colSpan="3">
                                     <span style={{ fontFamily: 'monospace', color: '#047857' }}>
                                       {aadhaarVerifiedData.digilockerUri || `in.gov.uidai-adhr-${aadhaarInput.replace(/\s/g, '').slice(-4)}`}
                                     </span>
                                     <span style={{ marginLeft: '0.75rem', fontSize: '0.75rem', color: '#64748b' }}>
-                                      (DigiLocker Authentic Registry Verified)
+                                      {t.digilockerAuthenticVerified || "(DigiLocker Authentic Registry Verified)"}
                                     </span>
                                   </td>
                                 </tr>
@@ -453,7 +497,7 @@ export function FullScreenAuthPage({
                                   setAadhaarInput('');
                                 }}
                               >
-                                Re-verify Aadhaar
+                                {t.reverifyAadhaar || "Re-verify Aadhaar"}
                               </button>
                             </div>
                           </div>
@@ -464,14 +508,14 @@ export function FullScreenAuthPage({
                       <fieldset className={`kyc-fieldset ${panVerifiedData ? 'completed' : (aadhaarVerifiedData ? 'active' : 'disabled')}`}>
                         <legend className="kyc-legend">
                           <span className="legend-num">2</span>
-                          <span>PAN Card Tax & Income Category</span>
-                          {panVerifiedData && <span className="verified-tag">VERIFIED</span>}
+                          <span>{t.step2PanLegend || "PAN Card Tax & Income Category"}</span>
+                          {panVerifiedData && <span className="verified-tag">{t.verifiedBadge || "VERIFIED"}</span>}
                         </legend>
 
                         {aadhaarVerifiedData && !panVerifiedData && (
                           <div className="fieldset-content">
                             <div className="form-field-group">
-                              <label htmlFor="pan-input-box">Enter 10-Digit PAN Number (e.g. ABCDE1234F)</label>
+                              <label htmlFor="pan-input-box">{t.enter10DigitPan || "Enter 10-Digit PAN Number (e.g. ABCDE1234F)"}</label>
                               <div className="input-with-button-row">
                                 <input
                                   id="pan-input-box"
@@ -491,7 +535,20 @@ export function FullScreenAuthPage({
                                   onClick={handleVerifyPan}
                                   disabled={isVerifyingPan}
                                 >
-                                  {isVerifyingPan ? "Verifying..." : "Verify PAN"}
+                                  {isVerifyingPan ? (t.verifyingPan || "Verifying...") : (t.verifyPanBtn || "Verify PAN")}
+                                </button>
+                              </div>
+                              <div className="demo-chip-row">
+                                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{t.demoPanLabel || "Demo PAN:"}</span>
+                                <button
+                                  type="button"
+                                  className="demo-chip-btn"
+                                  onClick={() => {
+                                    setPanInput("ABCDE9818F");
+                                    setPanError("");
+                                  }}
+                                >
+                                  {t.useDemoPan || "Use ABCDE9818F (NSDL Verified)"}
                                 </button>
                               </div>
                             </div>
@@ -507,9 +564,9 @@ export function FullScreenAuthPage({
                             <table className="classic-data-table">
                               <tbody>
                                 <tr>
-                                  <td className="table-label">PAN Number:</td>
+                                  <td className="table-label">{t.panNumberLabel || "PAN Number:"}</td>
                                   <td className="table-value"><strong>{panVerifiedData.pan}</strong></td>
-                                  <td className="table-label">Tax Assessment:</td>
+                                  <td className="table-label">{t.taxAssessmentLabel || "Tax Assessment:"}</td>
                                   <td className="table-value"><strong>{panVerifiedData.taxCategory}</strong> ({panVerifiedData.verificationStatus})</td>
                                 </tr>
                               </tbody>
@@ -522,7 +579,7 @@ export function FullScreenAuthPage({
                       <fieldset className={`kyc-fieldset ${bankVerifiedData ? 'completed' : (aadhaarVerifiedData ? 'active' : 'disabled')}`}>
                         <legend className="kyc-legend">
                           <span className="legend-num">3</span>
-                          <span>Bank Account & 6-Month Inflow Statement</span>
+                          <span>{t.step3BankLegend || "Bank Account & 6-Month Inflow Statement"}</span>
                           {bankVerifiedData && <span className="verified-tag">VERIFIED</span>}
                         </legend>
 
@@ -530,7 +587,7 @@ export function FullScreenAuthPage({
                           <div className="fieldset-content">
                             <div className="form-grid-2col">
                               <div className="form-field-group">
-                                <label htmlFor="bank-select-box">Select Bank *</label>
+                                <label htmlFor="bank-select-box">{t.selectBankLabel || "Select Bank *"}</label>
                                 <select
                                   id="bank-select-box"
                                   className="portal-input classic-input"
@@ -544,7 +601,7 @@ export function FullScreenAuthPage({
                               </div>
 
                               <div className="form-field-group">
-                                <label htmlFor="ifsc-input-box">Bank Branch IFSC Code *</label>
+                                <label htmlFor="ifsc-input-box">{t.ifscLabel || "Bank Branch IFSC Code *"}</label>
                                 <input
                                   id="ifsc-input-box"
                                   type="text"
@@ -559,7 +616,7 @@ export function FullScreenAuthPage({
 
                             <div className="form-grid-2col">
                               <div className="form-field-group">
-                                <label htmlFor="account-num-box">Bank Account Number *</label>
+                                <label htmlFor="account-num-box">{t.accountNumberLabel || "Bank Account Number *"}</label>
                                 <input
                                   id="account-num-box"
                                   type="password"
@@ -572,7 +629,7 @@ export function FullScreenAuthPage({
                               </div>
 
                               <div className="form-field-group">
-                                <label htmlFor="statement-upload">Upload 6-Month Bank Statement (PDF - Optional)</label>
+                                <label htmlFor="statement-upload">{t.uploadStatementLabel || "Upload 6-Month Bank Statement (PDF - Optional)"}</label>
                                 <input
                                   id="statement-upload"
                                   type="file"
@@ -590,7 +647,7 @@ export function FullScreenAuthPage({
                                 onClick={handleVerifyBankStatement}
                                 disabled={isVerifyingBank}
                               >
-                                {isVerifyingBank ? "Analyzing Statement & DBT Status..." : "Audit Bank Statement & DBT Status"}
+                                {isVerifyingBank ? (t.auditingBank || "Analyzing Statement & DBT Status...") : (t.auditBankBtn || "Audit Bank Statement & DBT Status")}
                               </button>
                             </div>
 
@@ -605,15 +662,15 @@ export function FullScreenAuthPage({
                             <table className="classic-data-table">
                               <tbody>
                                 <tr>
-                                  <td className="table-label">Bank / Account:</td>
+                                  <td className="table-label">{t.bankAccountLabel || "Bank / Account:"}</td>
                                   <td className="table-value"><strong>{bankVerifiedData.bankName}</strong> ({bankVerifiedData.accountMasked})</td>
-                                  <td className="table-label">DBT NPCI Status:</td>
+                                  <td className="table-label">{t.dbtNpciStatusLabel || "DBT NPCI Status:"}</td>
                                   <td className="table-value"><strong style={{ color: '#15803d' }}>{bankVerifiedData.dbtStatus}</strong></td>
                                 </tr>
                                 <tr>
-                                  <td className="table-label">Assessed Inflow:</td>
-                                  <td className="table-value"><strong>₹{(bankVerifiedData.assessedAnnualIncome / 100000).toFixed(2)} Lakhs/yr</strong></td>
-                                  <td className="table-label">Monthly Average:</td>
+                                  <td className="table-label">{t.assessedInflowLabel || "Assessed Inflow:"}</td>
+                                  <td className="table-value"><strong>₹{(bankVerifiedData.assessedAnnualIncome / 100000).toFixed(2)} {t.lakhsPerYr || "Lakhs/yr"}</strong></td>
+                                  <td className="table-label">{t.monthlyAverageLabel || "Monthly Average:"}</td>
                                   <td className="table-value">{bankVerifiedData.avgMonthlyInflow}</td>
                                 </tr>
                               </tbody>
@@ -632,61 +689,157 @@ export function FullScreenAuthPage({
                         >
                           {aadhaarVerifiedData 
                             ? `Proceed to Matching Schemes as ${aadhaarVerifiedData.name} →` 
-                            : "Verify Aadhaar to Proceed"}
+                            : (t.verifyAadhaarToProceed || "Verify Aadhaar to Proceed")}
                         </button>
                       </div>
                     </div>
                   ) : (
-                    /* Basic Mobile Flow */
+                    /* Basic Mobile Flow with Demo SMS Dispatch */
                     <form onSubmit={handleMobileSubmit} className="classic-form">
+                      <div className="demo-badge-banner">
+                        <div>
+                          {t.demoLoadedBanner || "Demo Database Record Loaded: Verified citizen profile for Mobile +91 9818886998 (Linked to Aadhaar 9818 8869 9812 and PAN ABCDE9818F)."}
+                        </div>
+                        <div style={{ fontSize: '0.73rem', color: '#166534' }}>
+                          {t.demoClickSms || "Click Send One-Time Password (OTP) to simulate official SMS dispatch to 9818886998."}
+                        </div>
+                      </div>
+
+                      {dispatchedSmsAlert && (
+                        <div className="sms-dispatch-toast">
+                          <div className="sms-header-line">
+                            <span>{t.smsGatewayHeader || "Official SMS Gateway"} ({dispatchedSmsAlert.sender})</span>
+                            <span>{t.deliveredTo || "Delivered to:"} +91 {dispatchedSmsAlert.phone}</span>
+                          </div>
+                          <div className="sms-body-text">
+                            {dispatchedSmsAlert.message}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            <button
+                              type="button"
+                              className="sms-autofill-btn"
+                              onClick={() => {
+                                setMobileOtp(dispatchedSmsAlert.otp);
+                                setMobileError('');
+                              }}
+                            >
+                              {t.clickAutoFill || "Click to Auto-Fill OTP:"} {dispatchedSmsAlert.otp}
+                            </button>
+                            <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{t.expiresIn10 || "Expires in 10 minutes"}</span>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="form-field-group">
-                        <label htmlFor="mobile-fullname">Applicant Full Name *</label>
+                        <label htmlFor="mobile-fullname">{t.applicantFullName || "Applicant Full Name *"}</label>
                         <input
                           id="mobile-fullname"
                           type="text"
                           className="portal-input classic-input"
-                          placeholder="e.g. Ramesh Kumar"
+                          placeholder="e.g. Lakshya Sharma"
                           value={citizenName}
                           onChange={(e) => setCitizenName(e.target.value)}
                         />
                       </div>
 
                       <div className="form-field-group">
-                        <label htmlFor="mobile-num">10-Digit Mobile Number *</label>
-                        <input
-                          id="mobile-num"
-                          type="tel"
-                          maxLength="10"
-                          className="portal-input classic-input"
-                          placeholder="9876543210"
-                          value={citizenMobile}
-                          onChange={(e) => setCitizenMobile(e.target.value)}
-                          disabled={mobileOtpSent}
-                          required
-                        />
+                        <label htmlFor="mobile-num">{t.tenDigitMobile || "10-Digit Mobile Number *"}</label>
+                        <div className="input-with-button-row">
+                          <input
+                            id="mobile-num"
+                            type="tel"
+                            maxLength="10"
+                            className="portal-input classic-input"
+                            placeholder="9818886998"
+                            value={citizenMobile}
+                            onChange={(e) => {
+                              setCitizenMobile(e.target.value.replace(/\D/g, ''));
+                              setMobileError('');
+                            }}
+                            disabled={mobileOtpSent}
+                            required
+                          />
+                          {!mobileOtpSent && (
+                            <button
+                              type="button"
+                              className="demo-chip-btn"
+                              style={{ whiteSpace: 'nowrap' }}
+                              onClick={() => {
+                                setCitizenMobile('9818886998');
+                                setCitizenName('Lakshya Sharma');
+                                setMobileError('');
+                              }}
+                            >
+                              {t.resetTo9818 || "Reset to 9818886998"}
+                            </button>
+                          )}
+                        </div>
                       </div>
 
                       {mobileOtpSent && (
                         <div className="form-field-group otp-input-block">
-                          <label htmlFor="mobile-otp-val">Enter 4-Digit OTP (Demo OTP: 1234) *</label>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <label htmlFor="mobile-otp-val">{t.enter6DigitOtp || "Enter 6-Digit OTP (Demo: 482916) *"}</label>
+                            <button
+                              type="button"
+                              className="demo-chip-btn"
+                              onClick={() => {
+                                setMobileOtp('482916');
+                                setMobileError('');
+                              }}
+                            >
+                              {t.fill482916 || "Fill 482916"}
+                            </button>
+                          </div>
                           <input
                             id="mobile-otp-val"
-                            type="password"
+                            type="text"
                             maxLength="6"
                             className="portal-input classic-input"
-                            placeholder="1234"
+                            placeholder="482916"
                             value={mobileOtp}
-                            onChange={(e) => setMobileOtp(e.target.value)}
+                            onChange={(e) => {
+                              setMobileOtp(e.target.value);
+                              setMobileError('');
+                            }}
                             required
                           />
                         </div>
                       )}
 
-                      <div className="form-actions-inline">
-                        <button type="submit" className="classic-submit-btn">
-                          {mobileOtpSent ? "Verify OTP & Enter Citizen Portal" : "Send One-Time Password (OTP)"}
+                      {mobileError && (
+                        <div className="classic-alert error">{mobileError}</div>
+                      )}
+
+                      <div className="form-actions-inline" style={{ marginTop: '0.85rem' }}>
+                        <button 
+                          type="submit" 
+                          className="classic-submit-btn"
+                          disabled={isSendingOtp || isVerifyingOtp}
+                        >
+                          {mobileOtpSent 
+                            ? (isVerifyingOtp ? (t.verifyingOtp || "Verifying OTP & Logging In...") : (t.verifyOtpBtn || "Verify OTP & Enter Citizen Portal →"))
+                            : (isSendingOtp ? (t.dispatchingOtp || "Dispatching OTP via SMS...") : (t.sendOtpBtn || "Send One-Time Password (OTP)"))}
                         </button>
                       </div>
+
+                      {mobileOtpSent && (
+                        <div style={{ marginTop: '0.65rem', textAlign: 'right' }}>
+                          <button
+                            type="button"
+                            className="classic-action-btn secondary"
+                            style={{ padding: '0.25rem 0.65rem', fontSize: '0.72rem' }}
+                            onClick={() => {
+                              setMobileOtpSent(false);
+                              setMobileOtp('');
+                              setDispatchedSmsAlert(null);
+                              setMobileError('');
+                            }}
+                          >
+                            {t.changeMobileResend || "Change Mobile Number / Resend"}
+                          </button>
+                        </div>
+                      )}
                     </form>
                   )}
                 </div>
@@ -694,13 +847,13 @@ export function FullScreenAuthPage({
                 /* Official CSC Operator Form */
                 <form onSubmit={handleOfficialSubmit} className="official-auth-form">
                   <div className="form-sub-header">
-                    <h3>Common Service Center (CSC) & Official Desk</h3>
-                    <p>Enter authorized credentials to register citizens and issue official welfare intake dockets.</p>
+                    <h3>{t.cscDeskHeader || "Common Service Center (CSC) & Official Desk"}</h3>
+                    <p>{t.cscDeskDesc || "Enter authorized credentials to register citizens and issue official welfare intake dockets."}</p>
                   </div>
 
                   <div className="form-grid-2col">
                     <div className="form-field-group">
-                      <label htmlFor="officer-name">Authorized Official Name *</label>
+                      <label htmlFor="officer-name">{t.authorizedOfficialName || "Authorized Official Name *"}</label>
                       <input
                         id="officer-name"
                         type="text"
@@ -713,7 +866,7 @@ export function FullScreenAuthPage({
                     </div>
 
                     <div className="form-field-group">
-                      <label htmlFor="officer-id">Operator / CSC VLE ID *</label>
+                      <label htmlFor="officer-id">{t.operatorIdLabel || "Operator / CSC VLE ID *"}</label>
                       <input
                         id="officer-id"
                         type="text"
@@ -728,7 +881,7 @@ export function FullScreenAuthPage({
 
                   <div className="form-grid-2col">
                     <div className="form-field-group">
-                      <label htmlFor="officer-dept">Department / Center</label>
+                      <label htmlFor="officer-dept">{t.deptCenterLabel || "Department / Center Name *"}</label>
                       <input
                         id="officer-dept"
                         type="text"
@@ -739,7 +892,7 @@ export function FullScreenAuthPage({
                     </div>
 
                     <div className="form-field-group">
-                      <label htmlFor="officer-dist">District / Tehsil Jurisdiction</label>
+                      <label htmlFor="officer-dist">{t.districtLabel || "District *"}</label>
                       <input
                         id="officer-dist"
                         type="text"
@@ -751,7 +904,7 @@ export function FullScreenAuthPage({
                   </div>
 
                   <div className="form-field-group">
-                    <label htmlFor="officer-pin">Security PIN (6 Digits)</label>
+                    <label htmlFor="officer-pin">{t.securityPinLabel || "Operator Security PIN *"}</label>
                     <input
                       id="officer-pin"
                       type="password"
@@ -779,7 +932,7 @@ export function FullScreenAuthPage({
                       </button>
                     </div>
                     <div className="captcha-input-wrap">
-                      <label htmlFor="captcha-input">Enter Captcha Code Above *</label>
+                      <label htmlFor="captcha-input">{t.securityCaptchaLabel || "Security Captcha Code *"}</label>
                       <input
                         id="captcha-input"
                         type="text"
@@ -794,7 +947,7 @@ export function FullScreenAuthPage({
 
                   <div className="form-actions-inline">
                     <button type="submit" className="classic-submit-btn">
-                      Authenticate & Access CSC Terminal →
+                      {t.authenticateCscBtn || "Authenticate & Access CSC Terminal →"}
                     </button>
                   </div>
                 </form>
@@ -808,10 +961,10 @@ export function FullScreenAuthPage({
       <footer className="auth-footer-classic">
         <div className="auth-footer-inner">
           <p>
-            National Informatics Centre (NIC) • Ministry of Electronics & IT • Government of India.
+            {t.footerNic || "National Informatics Centre (NIC) • Ministry of Electronics & IT • Government of India."}
           </p>
           <p className="auth-footer-sub">
-            All data processed in compliance with the Digital Personal Data Protection (DPDP) Act 2023.
+            {t.footerDpdp || "All data processed in compliance with the Digital Personal Data Protection (DPDP) Act 2023."}
           </p>
         </div>
       </footer>

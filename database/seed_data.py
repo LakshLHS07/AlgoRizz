@@ -12,7 +12,103 @@ if str(WORKSPACE_DIR) not in sys.path:
     sys.path.insert(0, str(WORKSPACE_DIR))
 
 from database.db import engine, init_db, SessionLocal
-from database.models import Scheme
+from database.models import Scheme, CitizenProfile, KYCRecord
+from datetime import datetime
+
+def seed_demo_citizen():
+    init_db()
+    db = SessionLocal()
+    phone = "9818886998"
+    try:
+        # Check if demo citizen exists
+        citizen = db.query(CitizenProfile).filter(CitizenProfile.phone == phone).first()
+        if not citizen:
+            citizen = CitizenProfile(
+                id="CITIZEN-9818886998",
+                full_name="Lakshya Sharma",
+                age=28,
+                gender="male",
+                occupation="farmer",
+                annual_income=140000,
+                state="Maharashtra",
+                district="Pune",
+                area_type="rural",
+                social_category="General",
+                has_land=True,
+                is_student=False,
+                is_differently_abled=False,
+                phone=phone,
+                aadhaar_last4="9812"
+            )
+            db.add(citizen)
+            db.flush()
+            print(f"[Seed] Created demo citizen profile for {phone} (ID: {citizen.id})")
+        else:
+            print(f"[Seed] Demo citizen profile already exists for {phone}")
+
+        # Seed linked Aadhaar KYC record
+        aadhaar_rec = db.query(KYCRecord).filter(
+            KYCRecord.citizen_id == citizen.id, 
+            KYCRecord.document_type == "aadhaar"
+        ).first()
+        if not aadhaar_rec:
+            aadhaar_rec = KYCRecord(
+                id="KYC-AADHAAR-9818",
+                citizen_id=citizen.id,
+                document_type="aadhaar",
+                document_hash="AADHAAR-981888699812",
+                is_verified=True,
+                verification_source="UIDAI / DigiLocker National Repository",
+                extracted_fields={
+                    "aadhaarNumber": "981888699812",
+                    "aadhaarMasked": "XXXXXXXX9812",
+                    "digilockerUri": "in.gov.uidai-adhr-9812",
+                    "name": "Lakshya Sharma",
+                    "dob": "1998-07-15",
+                    "age": 28,
+                    "gender": "male",
+                    "state": "Maharashtra",
+                    "district": "Pune",
+                    "pincode": "411001",
+                    "phone": phone
+                },
+                verified_at=datetime.utcnow()
+            )
+            db.add(aadhaar_rec)
+
+        # Seed linked PAN KYC record
+        pan_rec = db.query(KYCRecord).filter(
+            KYCRecord.citizen_id == citizen.id, 
+            KYCRecord.document_type == "pan"
+        ).first()
+        if not pan_rec:
+            pan_rec = KYCRecord(
+                id="KYC-PAN-9818",
+                citizen_id=citizen.id,
+                document_type="pan",
+                document_hash="PAN-ABCDE9818F",
+                is_verified=True,
+                verification_source="NSDL / Income Tax Department (ITD)",
+                extracted_fields={
+                    "pan": "ABCDE9818F",
+                    "name": "Lakshya Sharma",
+                    "taxBracket": "Below Basic Exemption Threshold (Eligible for Subsidies)",
+                    "assessedIncome": 140000.0,
+                    "status": "Active & Aadhaar Linked (NSDL Verified)"
+                },
+                verified_at=datetime.utcnow()
+            )
+            db.add(pan_rec)
+
+        db.commit()
+        print(f"[Success] Demo database records for phone {phone}, Aadhaar 9818 8869 9812, and PAN ABCDE9818F seeded successfully!")
+    except Exception as e:
+        db.rollback()
+        print(f"[Error] Failed to seed demo citizen: {e}")
+    finally:
+        db.close()
+
+
 
 def seed_schemes():
     init_db()
@@ -82,3 +178,4 @@ def seed_schemes():
 
 if __name__ == "__main__":
     seed_schemes()
+    seed_demo_citizen()

@@ -31,10 +31,10 @@ export function SchemeCard({
         <div className="card-score-cluster">
           <div className={`card-match-pill ${isHighMatch ? 'high' : 'moderate'}`}>
             <span className="match-num">{scheme.matchScore}%</span>
-            <span className="match-label">Match</span>
+            <span className="match-label">{t.matchScoreTag || "Match"}</span>
           </div>
           {scheme.isEligible && (
-            <span className="card-verified-dot" title="Criteria Verified">Eligible</span>
+            <span className="card-verified-dot" title={t.statusEligible || "Criteria Verified"}>{t.eligibleStamp || "Eligible"}</span>
           )}
         </div>
       </div>
@@ -45,7 +45,7 @@ export function SchemeCard({
 
       <div className="card-meta-footer">
         <div className="card-target-text">
-          <span>Target: </span>
+          <span>{t.targetBeneficiary || "Target:"} </span>
           <strong>{scheme.targetAudience || scheme.targetGroup || 'Eligible Citizens'}</strong>
         </div>
 
@@ -66,10 +66,10 @@ export function SchemeCard({
                 e.stopPropagation();
                 onOpenVideo(scheme);
               }}
-              title="Watch AI Video Guide"
+              title={t.watchAiVideo || "Watch AI Video Guide"}
               aria-label="AI Video Guide"
             >
-              Video
+              {t.videoLabel || "Video"}
             </button>
           )}
 
@@ -80,10 +80,10 @@ export function SchemeCard({
               e.stopPropagation();
               onToggleCompare(scheme.id);
             }}
-            title={isCompared ? "Remove from Compare Tray" : "Compare Scheme"}
+            title={isCompared ? (t.inTray || "Remove from Compare Tray") : (t.compare || "Compare Scheme")}
             aria-label="Compare"
           >
-            {isCompared ? "Compared" : "Compare"}
+            {isCompared ? (t.inTray || "Compared") : (t.compare || "Compare")}
           </button>
 
           <button
@@ -93,10 +93,10 @@ export function SchemeCard({
               e.stopPropagation();
               onToggleBookmark(scheme.id);
             }}
-            title={isBookmarked ? "Remove Bookmark" : "Save Scheme"}
+            title={isBookmarked ? (t.saved || "Remove Bookmark") : (t.save || "Save Scheme")}
             aria-label="Save"
           >
-            {isBookmarked ? "Saved" : "Save"}
+            {isBookmarked ? (t.saved || "Saved") : (t.save || "Save")}
           </button>
         </div>
       </div>

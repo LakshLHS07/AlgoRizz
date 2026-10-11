@@ -19,6 +19,7 @@ import { matchSchemes, extractEntitiesFromPrompt } from './utils/nlpMatcher';
 import { DEFAULT_BACKEND_URL, pingBackend } from './utils/apiBridge';
 import { INDIAN_LANGUAGES, getTranslation } from './utils/translations';
 import { getLocalizedScheme } from './utils/schemeLocalization';
+import { translateDOM } from './utils/domTranslator';
 
 const INITIAL_PROFILE = {
   age: 28,
@@ -121,7 +122,12 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
-  }, [selectedLanguage]);
+    // Synchronously execute DOM translation
+    const timer = setTimeout(() => {
+      translateDOM(document.body, selectedLanguage);
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [selectedLanguage, discoveryMode, activeWindowTab, isDualWindowView]);
 
   // Persist bookmarks
   useEffect(() => {
@@ -382,7 +388,7 @@ export default function App() {
                   className={`mode-tab ${discoveryMode === 'journey' ? 'active' : ''}`}
                   onClick={() => setDiscoveryMode('journey')}
                 >
-                  Guided Journey
+                  {t.discoveryModeJourney || 'Guided Journey'}
                 </button>
 
                 <button
@@ -392,7 +398,7 @@ export default function App() {
                   className={`mode-tab ${discoveryMode === 'nlp' ? 'active' : ''}`}
                   onClick={() => setDiscoveryMode('nlp')}
                 >
-                  AI Prompt Search
+                  {t.discoveryModeNlp || 'AI Prompt Search'}
                 </button>
 
                 <button
@@ -406,7 +412,7 @@ export default function App() {
                     if (el) el.scrollIntoView({ behavior: 'smooth' });
                   }}
                 >
-                  All Schemes ({allAssessedSchemes.length})
+                  {t.allSchemes || 'All Schemes'} ({allAssessedSchemes.length})
                 </button>
               </div>
             </div>
@@ -569,7 +575,7 @@ export default function App() {
                         <p className="panel-subtitle">{t.allCatalogSub || 'Complete master repository of national and state government schemes'}</p>
                       </div>
                     </div>
-                    <span className="panel-count-tag blue">{filteredCatalogSchemes.length} Total</span>
+                    <span className="panel-count-tag blue">{filteredCatalogSchemes.length} {t.total || 'Total'}</span>
                   </div>
 
                   {/* Catalog Filter Input */}
@@ -577,7 +583,7 @@ export default function App() {
                     <input
                       type="text"
                       className="catalog-search-input"
-                      placeholder="Search schemes by name, keyword or ministry..."
+                      placeholder={t.searchAllPlaceholder || "Search schemes by name, keyword or ministry..."}
                       value={catalogSearchTerm}
                       onChange={(e) => setCatalogSearchTerm(e.target.value)}
                     />
@@ -594,10 +600,15 @@ export default function App() {
 
                   {filteredCatalogSchemes.length === 0 ? (
                     <div className="empty-results-box compact">
-                      <h4 className="empty-title">No Schemes Found</h4>
-                      <p className="empty-desc">No government schemes matched "{catalogSearchTerm}".</p>
+                      <h4 className="empty-title">{t.noSchemesFoundCatalog || "No Schemes Found"}</h4>
+                      <p className="empty-desc">
+                        {t.noSchemesCatalogSub 
+                          ? t.noSchemesCatalogSub.replace('{term}', catalogSearchTerm) 
+                          : `No government schemes matched "${catalogSearchTerm}".`
+                        }
+                      </p>
                       <button type="button" className="classic-btn-secondary" onClick={() => setCatalogSearchTerm('')}>
-                        Clear Search
+                        {t.clearSearch || "Clear Search"}
                       </button>
                     </div>
                   ) : (
@@ -639,7 +650,7 @@ export default function App() {
                     <p className="window-subheading">
                       {activeWindowTab === 'eligible' && (t.eligibleFilterSub || 'Schemes matching your verified demographic parameters, income & occupation')}
                       {activeWindowTab === 'all' && (t.allCatalogSub || 'Complete master repository of national and state government schemes')}
-                      {activeWindowTab === 'bookmarks' && 'Your saved schemes for fast comparison and intake processing'}
+                      {activeWindowTab === 'bookmarks' && (t.bookmarksSub || 'Your saved schemes for fast comparison and intake processing')}
                     </p>
                   </div>
 
@@ -648,7 +659,7 @@ export default function App() {
                       <input
                         type="text"
                         className="catalog-search-input"
-                        placeholder="Search all schemes..."
+                        placeholder={t.searchSchemesPlaceholderShort || "Search all schemes..."}
                         value={catalogSearchTerm}
                         onChange={(e) => setCatalogSearchTerm(e.target.value)}
                       />
@@ -677,11 +688,11 @@ export default function App() {
                     return (
                       <div className="empty-results-box">
                         <h4 className="empty-title">
-                          {activeWindowTab === 'bookmarks' ? 'No Saved Schemes' : t.noSchemes}
+                          {activeWindowTab === 'bookmarks' ? (t.noSavedSchemes || 'No Saved Schemes') : t.noSchemes}
                         </h4>
                         <p className="empty-desc">
                           {activeWindowTab === 'bookmarks' 
-                            ? 'You have not saved any schemes yet. Click the "Save" button on any scheme card.'
+                            ? (t.noSavedSchemesDesc || 'You have not saved any schemes yet. Click the "Save" button on any scheme card.')
                             : t.noSchemesSub}
                         </p>
                         <button type="button" className="classic-btn-primary" onClick={handleResetFilters} style={{ maxWidth: 220, margin: '1rem auto 0' }}>

@@ -28,9 +28,9 @@ export function ProfileDrawer({
   return (
     <aside className="minimal-filter-sidebar" aria-label="Scheme Filter Panel">
       <div className="filter-sidebar-header">
-        <h3 className="filter-sidebar-title">Filters</h3>
+        <h3 className="filter-sidebar-title">{t.filterTitle || "Filters"}</h3>
         <button type="button" className="filter-reset-link" onClick={onReset}>
-          Reset
+          {t.resetAll || "Reset"}
         </button>
       </div>
 
@@ -38,7 +38,7 @@ export function ProfileDrawer({
         {/* Category Filter */}
         <div className="filter-group">
           <label className="filter-label" htmlFor="cat-filter">
-            Scheme Category
+            {t.schemeCategory || "Scheme Category"}
           </label>
           <select
             id="cat-filter"
@@ -57,7 +57,7 @@ export function ProfileDrawer({
         {/* Occupation */}
         <div className="filter-group">
           <label className="filter-label" htmlFor="occupation-select">
-            Occupation
+            {t.occupation || "Occupation"}
           </label>
           <select
             id="occupation-select"
@@ -76,7 +76,7 @@ export function ProfileDrawer({
         {/* State */}
         <div className="filter-group">
           <label className="filter-label" htmlFor="state-select">
-            State / UT
+            {t.stateUt || "State / UT"}
           </label>
           <select
             id="state-select"
@@ -93,7 +93,7 @@ export function ProfileDrawer({
         {/* Social Category */}
         <div className="filter-group">
           <label className="filter-label" htmlFor="category-select">
-            Social Category
+            {t.socialCategory || "Social Category"}
           </label>
           <select
             id="category-select"
@@ -112,7 +112,7 @@ export function ProfileDrawer({
 
         {/* Age */}
         <div className="filter-group">
-          <label className="filter-label" htmlFor="age-input">Age (Years)</label>
+          <label className="filter-label" htmlFor="age-input">{t.ageYears || "Age (Years)"}</label>
           <input
             id="age-input"
             type="number"
@@ -128,9 +128,9 @@ export function ProfileDrawer({
         <div className="filter-group">
           <div className="filter-label-flex">
             <label className="filter-label" htmlFor="income-range">
-              Annual Income
+              {t.annualIncome || "Annual Income"}
             </label>
-            <span className="filter-value-text">₹{(profile.income / 100000).toFixed(2)}L</span>
+            <span className="filter-value-text">₹{(profile.income / 100000).toFixed(2)}{t.lakhsPerYr || "L"}</span>
           </div>
           <input
             id="income-range"
@@ -152,7 +152,7 @@ export function ProfileDrawer({
               checked={profile.hasLand}
               onChange={(e) => handleChange('hasLand', e.target.checked)}
             />
-            <span>Owns Agricultural Land</span>
+            <span>{t.landOwner || "Applicant owns agricultural land"}</span>
           </label>
 
           <label className="filter-checkbox-item">
@@ -161,7 +161,7 @@ export function ProfileDrawer({
               checked={profile.isRural}
               onChange={(e) => handleChange('isRural', e.target.checked)}
             />
-            <span>Rural Resident</span>
+            <span>{t.isRural || "Rural Resident"}</span>
           </label>
         </div>
       </div>

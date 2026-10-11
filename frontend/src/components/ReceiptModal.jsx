@@ -28,8 +28,8 @@ export function ReceiptModal({
       <div className="modal-dialog-large printable-receipt-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header no-print">
           <div>
-            <span className="modal-category-tag">Official Intake Docket</span>
-            <h2 className="modal-scheme-title">Beneficiary Scheme Eligibility Receipt</h2>
+            <span className="modal-category-tag">{t.intakeDocket || "Official Intake Docket"}</span>
+            <h2 className="modal-scheme-title">{t.receiptTitle || "Beneficiary Scheme Eligibility Receipt"}</h2>
           </div>
           <div className="receipt-header-btns" style={{ display: 'flex', gap: '0.5rem' }}>
             <button type="button" className="primary-action-button" onClick={handlePrint}>
@@ -44,22 +44,22 @@ export function ReceiptModal({
         <div className="receipt-content-body printable-area">
           {/* Government / CSC Official Heading */}
           <div className="receipt-gov-header">
-            <h3>{t.govIndia} / State Welfare Administration</h3>
-            <h4>Citizen Scheme Intake & Eligibility Assessment Slip</h4>
+            <h3>{t.govIndia} / {t.stateWelfareAdmin || "State Welfare Administration"}</h3>
+            <h4>{t.receiptSlipHeading || "Citizen Scheme Intake & Eligibility Assessment Slip"}</h4>
             <div className="receipt-ref-row">
-              <span><strong>Docket Ref No:</strong> {record.id}</span>
-              <span><strong>Date & Time:</strong> {record.timestamp}</span>
+              <span><strong>{t.docketRefNo || "Docket Ref No:"}</strong> {record.id}</span>
+              <span><strong>{t.dateTime || "Date & Time:"}</strong> {record.timestamp}</span>
             </div>
           </div>
 
           <div className="receipt-grid-2col">
             <div className="receipt-box">
-              <span className="receipt-box-title">Citizen Demographics</span>
+              <span className="receipt-box-title">{t.citizenDemographics || "Citizen Demographics"}</span>
               <table className="receipt-subtable">
                 <tbody>
-                  <tr><td>Name:</td><td><strong>{record.name}</strong></td></tr>
-                  <tr><td>Contact:</td><td>{record.mobile}</td></tr>
-                  <tr><td>Aadhaar Ref:</td><td>{record.aadhaar}</td></tr>
+                  <tr><td>{t.nameLabel || "Name:"}</td><td><strong>{record.name}</strong></td></tr>
+                  <tr><td>{t.contactLabel || "Contact:"}</td><td>{record.mobile}</td></tr>
+                  <tr><td>{t.aadhaarRefLabel || "Aadhaar Ref:"}</td><td>{record.aadhaar}</td></tr>
                   <tr><td>{t.ageYears} / {t.gender}:</td><td>{record.age} {t.years} / {translateGender(record.gender, selectedLanguage)}</td></tr>
                   <tr><td>{t.stateUt}:</td><td>{record.state}</td></tr>
                   <tr><td>{t.socialCategory}:</td><td>{translateSocialCategory(record.category, selectedLanguage)}</td></tr>
@@ -71,15 +71,15 @@ export function ReceiptModal({
             </div>
 
             <div className="receipt-box">
-              <span className="receipt-box-title">Enrolling Officer / CSC Details</span>
+              <span className="receipt-box-title">{t.enrollingOfficerDetails || "Enrolling Officer / CSC Details"}</span>
               <table className="receipt-subtable">
                 <tbody>
-                  <tr><td>Officer Name:</td><td><strong>{record.officerName}</strong></td></tr>
-                  <tr><td>Officer / VLE ID:</td><td>{record.officerId}</td></tr>
-                  <tr><td>Intake Terminal:</td><td>CSC / Gram Panchayat Desk</td></tr>
-                  <tr><td>Verification Mode:</td><td>Assisted In-Person Entry</td></tr>
+                  <tr><td>{t.officerNameLabel || "Officer Name:"}</td><td><strong>{record.officerName}</strong></td></tr>
+                  <tr><td>{t.officerIdLabel || "Officer / VLE ID:"}</td><td>{record.officerId}</td></tr>
+                  <tr><td>{t.intakeTerminalLabel || "Intake Terminal:"}</td><td>{t.cscGramPanchayatDesk || "CSC / Gram Panchayat Desk"}</td></tr>
+                  <tr><td>{t.verificationModeLabel || "Verification Mode:"}</td><td>{t.assistedInPersonEntry || "Assisted In-Person Entry"}</td></tr>
                   {record.notes && (
-                    <tr><td>Officer Notes:</td><td>{record.notes}</td></tr>
+                    <tr><td>{t.officerNotesLabel || "Officer Notes:"}</td><td>{record.notes}</td></tr>
                   )}
                 </tbody>
               </table>
@@ -88,7 +88,7 @@ export function ReceiptModal({
 
           {/* Matched Schemes Summary */}
           <div className="receipt-schemes-section">
-            <span className="receipt-box-title">Assessed Welfare Schemes and Eligibility</span>
+            <span className="receipt-box-title">{t.assessedSchemesHeading || "Assessed Welfare Schemes and Eligibility"}</span>
             <table className="criteria-table receipt-table">
               <thead>
                 <tr>
@@ -114,18 +114,18 @@ export function ReceiptModal({
           {/* Document Verification Notice & Signature Line */}
           <div className="receipt-footer-notes">
             <p>
-              <strong>Notice to Applicant:</strong> This receipt is an eligibility discovery assessment generated through official scheme criteria matching. Please submit the verified documents (Aadhaar Card, Bank Passbook with DBT, Land Records/Income Certificate) to the designated department portal or nearest CSC kiosk for direct disbursement.
+              <strong>{t.noticeToApplicant || "Notice to Applicant:"}</strong> {t.noticeToApplicantText || "This receipt is an eligibility discovery assessment generated through official scheme criteria matching. Please submit the verified documents (Aadhaar Card, Bank Passbook with DBT, Land Records/Income Certificate) to the designated department portal or nearest CSC kiosk for direct disbursement."}
             </p>
           </div>
 
           <div className="receipt-signature-row">
             <div className="sig-block">
               <div className="sig-line"></div>
-              <span>Citizen / Applicant Signature</span>
+              <span>{t.citizenSignature || "Citizen / Applicant Signature"}</span>
             </div>
             <div className="sig-block">
               <div className="sig-line"></div>
-              <span>Authorized CSC / Official Seal & Signature</span>
+              <span>{t.officerSignature || "Authorized CSC / Official Seal & Signature"}</span>
             </div>
           </div>
         </div>

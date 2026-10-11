@@ -18,7 +18,9 @@ from .schemas import (
     PanVerifyResponse,
     BankVerifyRequest,
     BankVerifyResponse,
-    IntakeRecord
+    IntakeRecord,
+    MobileSendOtpRequest,
+    MobileVerifyOtpRequest
 )
 from .schemes_data import SCHEMES_DATABASE, SCHEME_CATEGORIES, INDIAN_STATES, OCCUPATIONS
 from .nlp_matcher import extract_entities_from_prompt, match_all_schemes
@@ -27,7 +29,9 @@ from .kyc_service import (
     verify_aadhaar_otp, 
     verify_aadhaar_via_digilocker, 
     verify_pan_card, 
-    verify_bank_account
+    verify_bank_account,
+    send_mobile_otp,
+    verify_mobile_otp
 )
 from .localization import localize_scheme_dict
 
@@ -182,6 +186,20 @@ def verify_pan_endpoint(req: PanVerifyRequest):
 @app.post("/api/kyc/bank/verify", response_model=BankVerifyResponse, tags=["e-KYC Verification"])
 def verify_bank_endpoint(req: BankVerifyRequest):
     return verify_bank_account(req.bankName, req.accountNumber, req.ifscCode)
+
+@app.post("/api/kyc/mobile/send-otp", tags=["Mobile Authentication"])
+def send_mobile_otp_endpoint(req: MobileSendOtpRequest):
+    """
+    Dispatch SMS verification OTP to applicant mobile (demo numbers support auto OTP).
+    """
+    return send_mobile_otp(req.phone)
+
+@app.post("/api/kyc/mobile/verify-otp", tags=["Mobile Authentication"])
+def verify_mobile_otp_endpoint(req: MobileVerifyOtpRequest):
+    """
+    Verify citizen mobile OTP and retrieve linked citizen registry record.
+    """
+    return verify_mobile_otp(req.phone, req.otp)
 
 # Official Intake Docket
 @app.post("/api/intake/match", tags=["CSC Official Intake"])

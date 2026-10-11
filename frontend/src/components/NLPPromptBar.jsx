@@ -62,14 +62,14 @@ export function NLPPromptBar({
           onKeyDown={handleKeyDown}
         />
         <div className="nlp-action-bar">
-          <span className="nlp-hotkey-text">Press Enter ↵ to match</span>
+          <span className="nlp-hotkey-text">{t.pressEnterToMatch || "Press Enter ↵ to match"}</span>
           <button
             type="button"
             className="minimal-nlp-btn"
             onClick={onSearch}
             disabled={isSearching}
           >
-            {isSearching ? "Matching..." : "Find Schemes →"}
+            {isSearching ? (t.computingButton || "Matching...") : (t.searchButton || "Find Schemes →")}
           </button>
         </div>
       </div>
@@ -77,7 +77,7 @@ export function NLPPromptBar({
       {/* Extracted Parameters Strip */}
       {hasExtracted && (
         <div className="minimal-extracted-chips">
-          <span className="extracted-label">Identified:</span>
+          <span className="extracted-label">{t.detectedDetails || "Identified:"}</span>
           {extractedEntities.occupation && (
             <span className="extracted-chip">{extractedEntities.occupation}</span>
           )}
@@ -85,10 +85,10 @@ export function NLPPromptBar({
             <span className="extracted-chip">{extractedEntities.state}</span>
           )}
           {extractedEntities.age && (
-            <span className="extracted-chip">{extractedEntities.age} yrs</span>
+            <span className="extracted-chip">{extractedEntities.age} {t.yrsUnit || "yrs"}</span>
           )}
           {extractedEntities.income && (
-            <span className="extracted-chip">₹{(extractedEntities.income / 100000).toFixed(1)}L/yr</span>
+            <span className="extracted-chip">₹{(extractedEntities.income / 100000).toFixed(1)} {t.lakhsPerYr || "L/yr"}</span>
           )}
           {extractedEntities.category && (
             <span className="extracted-chip">{extractedEntities.category}</span>
@@ -98,7 +98,7 @@ export function NLPPromptBar({
 
       {/* Suggestion Personas */}
       <div className="minimal-personas-row">
-        <span className="personas-tag">Try prompt:</span>
+        <span className="personas-tag">{t.quickExamples || "Try prompt:"}</span>
         {EXAMPLE_PROMPTS.map((ex, index) => (
           <button
             key={index}
